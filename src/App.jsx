@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import { Paper, Alert } from '@mui/material'
-import { PlayArrow, CheckCircle } from '@mui/icons-material'
+import { PlayArrow, CheckCircle, GitHub } from '@mui/icons-material'
 
 import FolderSelector from './components/FolderSelector'
 import ScanModeSelector from './components/ScanModeSelector'
@@ -124,6 +124,42 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      
+      {/* GitHub Corner Ribbon */}
+      <Box
+        component="a"
+        href="https://github.com/ricardodeazambuja/deduplicator"
+        target="_blank"
+        rel="noopener noreferrer"
+        sx={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          zIndex: 1000,
+          width: 80,
+          height: 80,
+          background: 'linear-gradient(-45deg, #1976d2 0%, #1565c0 100%)',
+          color: 'white',
+          textDecoration: 'none',
+          cursor: 'pointer',
+          '&:hover': {
+            background: 'linear-gradient(-45deg, #1565c0 0%, #0d47a1 100%)',
+          },
+          clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
+          transition: 'all 0.3s ease',
+        }}
+      >
+        <GitHub 
+          sx={{ 
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            fontSize: 20,
+            transform: 'rotate(45deg)',
+          }} 
+        />
+      </Box>
+
       <Container maxWidth="lg">
         <Box sx={{ my: 4 }}>
           <Typography variant="h3" component="h1" gutterBottom>
@@ -285,6 +321,36 @@ function App() {
             onClose={closeResults}
             deleteResults={deleteResults}
           />
+
+          {/* License Notice */}
+          <Box sx={{ 
+            mt: 6, 
+            pt: 3, 
+            borderTop: 1, 
+            borderColor: 'divider',
+            textAlign: 'center'
+          }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              By using this application, you acknowledge that you have read and agree to the{' '}
+              <Box
+                component="a"
+                href="https://github.com/ricardodeazambuja/deduplicator/blob/main/LICENSE"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{ 
+                  color: 'primary.main', 
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' }
+                }}
+              >
+                MIT License
+              </Box>
+              .
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              This software is provided "as is" without warranty. Use at your own risk when deleting files.
+            </Typography>
+          </Box>
         </Box>
       </Container>
     </ThemeProvider>
