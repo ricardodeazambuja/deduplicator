@@ -1,0 +1,3 @@
+This is a second test file with different content.
+It contains different words and sentences.
+This file should not match the first file exactly.

@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  release-build:
+    name: 🏷️ Release Build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📦 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📥 Install Dependencies
+      run: npm ci
+      
+    - name: 🧪 Run Full Test Suite
+      run: |
+        npx playwright install --with-deps
+        npm test
+      
+    - name: 🏗️ Build for Production
+      run: npm run build
+      
+    - name: 📊 Bundle Analysis
+      run: |
+        echo "## 📊 Bundle Analysis" >> $GITHUB_STEP_SUMMARY
+        echo "```" >> $GITHUB_STEP_SUMMARY
+        ls -la dist/assets/ >> $GITHUB_STEP_SUMMARY
+        echo "```" >> $GITHUB_STEP_SUMMARY
+        
+        echo "### Total Size:" >> $GITHUB_STEP_SUMMARY
+        du -sh dist/ >> $GITHUB_STEP_SUMMARY
+      
+    - name: 🎁 Create Release Archive
+      run: |
+        cd dist
+        zip -r ../dedupe-local-${{ github.event.inputs.version || github.ref_name }}.zip .
+        cd ..
+        tar -czf dedupe-local-${{ github.event.inputs.version || github.ref_name }}.tar.gz -C dist .
+      
+    - name: 📤 Upload Release Assets
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-builds
+        path: |
+          dedupe-local-*.zip
+          dedupe-local-*.tar.gz
+        retention-days: 90
+        
+    - name: 🚀 Attach to Release
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./dedupe-local-${{ github.ref_name }}.zip
+        asset_name: dedupe-local-${{ github.ref_name }}.zip
+        asset_content_type: application/zip

@@ -1,0 +1,38 @@
+{
+  "name": "deduplicator",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:report": "npx playwright show-report",
+    "ci": "npm run build && npm run test",
+    "serve": "npm run build && npm run preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.54.2",
+    "playwright": "^1.54.2"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.1",
+    "@mui/material": "^7.3.1",
+    "@vitejs/plugin-react": "^5.0.0",
+    "idb": "^8.0.3",
+    "playwright-core": "^1.54.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "vite": "^7.1.1",
+    "zustand": "^5.0.7"
+  },
+  "description": ""
+}
