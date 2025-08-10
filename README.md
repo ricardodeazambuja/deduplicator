@@ -27,7 +27,8 @@ Dedupe-Local is a privacy-first file deduplication tool that runs entirely in yo
 ### 💾 **Smart Management**
 - **Session Persistence**: Save/load scan results using IndexedDB
 - **Safe Deletion**: Multi-confirmation workflow with detailed warnings
-- **Move to Archive**: Move duplicates to organized 'dedupelocal' archive directory
+- **Flexible Move Operations**: Move duplicates to existing directories OR create custom archive subdirectories
+- **Directory Usage Modes**: Choose between "use directory directly" or "create new subdirectory"
 - **Move Manifest**: JSON log of all file operations for tracking and audit
 - **Export Reports**: Generate comprehensive JSON reports with metadata
 
@@ -44,7 +45,7 @@ Dedupe-Local is a privacy-first file deduplication tool that runs entirely in yo
 3. **Choose Mode**: Select detection mode (Exact, Filename, Similarity, or Multi-Criteria)
 4. **Configure Settings**: Adjust thresholds and criteria as needed
 5. **Start Scan**: Review results and choose how to handle duplicates
-6. **Manage Files**: Delete unwanted files OR move them to archive directory
+6. **Manage Files**: Delete unwanted files OR move them to archive (with flexible directory options)
 7. **Save Results**: Optional - save sessions for later review
 
 ### For Developers
@@ -287,7 +288,7 @@ npm run build -- --analyze
 ### Contribution Areas
 
 **High Priority:**
-- 📁 **File move operations** - Alternative to deletion (organize instead of delete)
+- [x] 📁 **File move operations** - Alternative to deletion (organize instead of delete) ✅ **COMPLETED**
 - 📊 **Enhanced reporting** - HTML/Markdown exports with links and charts
 - 🎨 **UI/UX improvements** - Dark mode, animations, mobile responsiveness
 - 💾 **Backup/Recovery** - Integration with cloud storage APIs
@@ -359,10 +360,10 @@ Please report security vulnerabilities privately:
 
 ## 🔮 Roadmap
 
-### Version 2.1 (Next Release) 
+### Version 2.1 (Current Release) 
 - [x] Filename-based duplicate detection ✅ **COMPLETED**
 - [x] Multi-criteria matching with priority ✅ **COMPLETED**  
-- [x] File move operations (not just delete) ✅ **IN PROGRESS**
+- [x] Flexible file move operations with directory options ✅ **COMPLETED**
 - [ ] Enhanced HTML/Markdown reports with charts
 - [ ] Dark mode and UI improvements
 

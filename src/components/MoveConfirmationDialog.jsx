@@ -19,7 +19,9 @@ import {
   IconButton,
   Tooltip,
   TextField,
-  FormHelperText
+  FormHelperText,
+  FormControlLabel,
+  Switch
 } from '@mui/material'
 import { 
   DriveFileMove, 
@@ -44,7 +46,9 @@ export default function MoveConfirmationDialog({
   onUpdateDirectoryName,
   onConfirmMove,
   isMoving = false,
-  moveProgress = null
+  moveProgress = null,
+  useDirectoryDirectly = false,
+  onToggleDirectoryMode
 }) {
   const [showArchiveSelector, setShowArchiveSelector] = useState(!parentDirectory)
 
@@ -63,8 +67,8 @@ export default function MoveConfirmationDialog({
       setShowArchiveSelector(true)
       return
     }
-    if (!directoryValidation.valid) {
-      return // Don't proceed if directory name is invalid
+    if (!useDirectoryDirectly && !directoryValidation.valid) {
+      return // Don't proceed if directory name is invalid (only when creating subdirectory)
     }
     onConfirmMove()
   }
@@ -168,8 +172,32 @@ export default function MoveConfirmationDialog({
               </Box>
             </Paper>
 
-            {/* Custom Directory Name Input */}
+            {/* Directory Usage Mode Toggle */}
             {parentDirectory && (
+              <Paper sx={{ p: 2, mb: 3 }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={useDirectoryDirectly}
+                      onChange={(e) => onToggleDirectoryMode(e.target.checked)}
+                    />
+                  }
+                  label={useDirectoryDirectly ? 
+                    "Move files directly to selected directory" : 
+                    "Create subdirectory for files"
+                  }
+                />
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  {useDirectoryDirectly ? 
+                    `Files will be moved directly into: ${parentDirectory.name}` :
+                    `A new subdirectory will be created inside: ${parentDirectory.name}`
+                  }
+                </Typography>
+              </Paper>
+            )}
+
+            {/* Custom Directory Name Input */}
+            {parentDirectory && !useDirectoryDirectly && (
               <Paper sx={{ p: 2, mb: 3 }}>
                 <Typography variant="subtitle2" gutterBottom>
                   Archive Directory Name
@@ -279,7 +307,11 @@ export default function MoveConfirmationDialog({
                 What will happen:
               </Typography>
               <Typography variant="body2" component="div">
-                • Archive directory will be created: <code>{parentDirectory ? `${parentDirectory.name}/${directoryValidation.finalName || customDirectoryName}` : 'Not configured'}</code>
+                {useDirectoryDirectly ? (
+                  <>• Files will be moved directly to: <code>{parentDirectory ? parentDirectory.name : 'Not configured'}</code></>
+                ) : (
+                  <>• Archive directory will be created: <code>{parentDirectory ? `${parentDirectory.name}/${directoryValidation.finalName || customDirectoryName}` : 'Not configured'}</code></>
+                )}
                 <br />
                 • Files will be moved to the archive directory
                 <br />
@@ -310,7 +342,7 @@ export default function MoveConfirmationDialog({
             onClick={handleConfirm}
             variant="contained"
             color="warning"
-            disabled={!parentDirectory || !directoryValidation.valid || filesToMove.length === 0}
+            disabled={!parentDirectory || (!useDirectoryDirectly && !directoryValidation.valid) || filesToMove.length === 0}
             startIcon={<DriveFileMove />}
           >
             Move {filesToMove.length} Files

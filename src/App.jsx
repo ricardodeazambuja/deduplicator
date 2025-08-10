@@ -100,9 +100,11 @@ function App() {
     parentDirectory,
     customDirectoryName,
     directoryValidation,
+    useDirectoryDirectly,
     startMove,
     selectArchiveDirectory,
     updateCustomDirectoryName,
+    toggleDirectoryMode,
     confirmMove,
     cancelMove,
     closeMoveResults
@@ -364,6 +366,8 @@ function App() {
             onConfirmMove={confirmMove}
             isMoving={isMoving}
             moveProgress={moveProgress}
+            useDirectoryDirectly={useDirectoryDirectly}
+            onToggleDirectoryMode={toggleDirectoryMode}
           />
 
           <MoveResultsDialog
