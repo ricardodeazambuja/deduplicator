@@ -399,10 +399,10 @@ export default function MultiCriteriaResults({
                       key={file.path}
                       sx={{
                         border: '1px solid',
-                        borderColor: isOriginal ? 'primary.main' : 'divider',
+                        borderColor: isOriginal ? 'success.main' : 'divider',
                         borderRadius: 1,
                         mb: 1,
-                        bgcolor: isOriginal ? 'primary.light' : 'inherit',
+                        bgcolor: isOriginal ? 'success.light' : 'inherit',
                         opacity: isDisabled ? 0.6 : 1
                       }}
                     >
