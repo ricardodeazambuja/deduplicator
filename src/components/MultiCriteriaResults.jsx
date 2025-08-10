@@ -37,32 +37,79 @@ import {
   Star,
   DriveFileMove
 } from '@mui/icons-material'
+import React from 'react'
 import { formatBytes } from '../utils/formatters'
+import { useFileGroupSelection } from '../hooks/useFileGroupSelection'
+import OriginalFileSelector from './OriginalFileSelector'
+import FileSelectionChip from './FileSelectionChip'
 
 export default function MultiCriteriaResults({ 
   groups = [], 
   onFileDelete, 
   onFileMove,
   isDeleting = false,
-  selectedFiles = new Set(),
-  onFileSelectionChange
+  onOperationSuccess,
+  onOperationError
 }) {
-  const handleGroupSelectAll = (group, selectAll) => {
-    const updatedSelection = new Set(selectedFiles)
+  const {
+    selectedFiles,
+    originalFiles,
+    handleFileSelection,
+    handleOriginalSelection,
+    handleGroupSelectAll,
+    getFileState,
+    isFileOriginal,
+    getGroupSummary,
+    handleOperationSuccess: handleOpSuccess,
+    handleOperationError: handleOpError
+  } = useFileGroupSelection()
+
+  // Initialize first file as original for each group
+  React.useEffect(() => {
+    groups.forEach((group, index) => {
+      const groupId = `multi-criteria-${index}`
+      if (!originalFiles.has(groupId) && group.files && group.files.length > 0) {
+        handleOriginalSelection(groupId, group.files[0].path)
+      }
+    })
+  }, [groups, originalFiles, handleOriginalSelection])
+
+  const handleDeleteSelected = () => {
+    if (selectedFiles.size === 0) return
     
-    if (selectAll) {
-      // Select all files in the group (skip first file for safety)
-      group.files.slice(1).forEach(file => {
-        updatedSelection.add(file.path)
-      })
-    } else {
-      // Deselect all files in the group
+    const filesToDelete = []
+    groups.forEach((group, index) => {
+      const groupId = `multi-criteria-${index}`
       group.files.forEach(file => {
-        updatedSelection.delete(file.path)
+        if (selectedFiles.has(file.path) && getFileState(file.path) === 'exists') {
+          filesToDelete.push({
+            ...file,
+            groupId
+          })
+        }
       })
-    }
+    })
     
-    onFileSelectionChange(updatedSelection)
+    onFileDelete(filesToDelete, handleOpSuccess, handleOpError)
+  }
+
+  const handleMoveSelected = () => {
+    if (selectedFiles.size === 0) return
+    
+    const filesToMove = []
+    groups.forEach((group, index) => {
+      const groupId = `multi-criteria-${index}`
+      group.files.forEach(file => {
+        if (selectedFiles.has(file.path) && getFileState(file.path) === 'exists') {
+          filesToMove.push({
+            ...file,
+            groupId
+          })
+        }
+      })
+    })
+    
+    onFileMove(filesToMove, handleOpSuccess, handleOpError)
   }
 
   const handleFileSelectionChange = (filePath, selected) => {
@@ -307,7 +354,7 @@ export default function MultiCriteriaResults({
                   <Button
                     size="small"
                     startIcon={<SelectAll />}
-                    onClick={() => handleGroupSelectAll(group, !allSelected)}
+                    onClick={() => handleGroupSelectAll(group, !allSelected, `multi-criteria-${groupIndex}`)}
                     variant={someSelected || allSelected ? "contained" : "outlined"}
                   >
                     {allSelected ? "Deselect All" : someSelected ? "Select All" : "Select All (Safe)"}
@@ -318,20 +365,20 @@ export default function MultiCriteriaResults({
                       <Button
                         size="small"
                         startIcon={<Delete />}
-                        onClick={() => onFileDelete(selectedInGroup.map(f => f.path))}
+                        onClick={handleDeleteSelected}
                         disabled={isDeleting}
                         color="error"
                       >
-                        Delete Selected ({selectedInGroup.length})
+                        Delete Selected ({selectedFiles.size})
                       </Button>
                       <Button
                         size="small"
                         startIcon={<DriveFileMove />}
-                        onClick={() => onFileMove(selectedInGroup)}
+                        onClick={handleMoveSelected}
                         disabled={isDeleting}
                         color="warning"
                       >
-                        Move Selected ({selectedInGroup.length})
+                        Move Selected ({selectedFiles.size})
                       </Button>
                     </>
                   )}
@@ -341,49 +388,69 @@ export default function MultiCriteriaResults({
               {/* File List */}
               <List dense>
                 {groupFiles.map((file, fileIndex) => {
+                  const groupId = `multi-criteria-${groupIndex}`
                   const isSelected = selectedFiles.has(file.path)
-                  const isFirst = fileIndex === 0
+                  const isOriginal = isFileOriginal(groupId, file.path)
+                  const fileState = getFileState(file.path)
+                  const isDisabled = fileState !== 'exists' || isDeleting
                   
                   return (
                     <ListItem 
                       key={file.path}
                       sx={{
                         border: '1px solid',
-                        borderColor: isFirst ? 'success.main' : 'divider',
+                        borderColor: isOriginal ? 'primary.main' : 'divider',
                         borderRadius: 1,
                         mb: 1,
-                        bgcolor: isFirst ? 'success.light' : 'inherit'
+                        bgcolor: isOriginal ? 'primary.light' : 'inherit',
+                        opacity: isDisabled ? 0.6 : 1
                       }}
                     >
+                      <ListItemIcon sx={{ minWidth: 'auto', mr: 1 }}>
+                        <OriginalFileSelector
+                          groupId={groupId}
+                          filePath={file.path}
+                          isOriginal={isOriginal}
+                          onOriginalSelect={handleOriginalSelection}
+                          disabled={isDisabled}
+                          fileState={fileState}
+                        />
+                      </ListItemIcon>
                       <ListItemIcon>
                         <Checkbox
                           checked={isSelected}
-                          onChange={(e) => handleFileSelectionChange(file.path, e.target.checked)}
-                          disabled={isDeleting}
+                          onChange={() => handleFileSelection(file.path)}
+                          disabled={isDisabled || isOriginal}
                         />
                       </ListItemIcon>
                       
                       <ListItemText
                         primary={
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body1">
+                            <Typography 
+                              variant="body1"
+                              sx={{ 
+                                textDecoration: fileState === 'deleted' ? 'line-through' : 'none',
+                                opacity: fileState === 'exists' ? 1 : 0.7
+                              }}
+                            >
                               {file.name}
                             </Typography>
-                            {isFirst && (
+                            <FileSelectionChip
+                              fileState={fileState}
+                              isOriginal={isOriginal}
+                              isSelected={isSelected}
+                              destinationPath={null}
+                            />
+                            {/* Show confidence score for multi-criteria results */}
+                            {group.confidence && (
                               <Chip 
-                                label="Recommended Keep" 
-                                size="small" 
-                                color="success"
-                                variant="filled"
-                                icon={<Star />}
-                              />
-                            )}
-                            {!isSelected && !isFirst && (
-                              <Chip 
-                                label="Keep" 
-                                size="small" 
-                                color="info"
+                                label={`${Math.round(group.confidence * 100)}%`}
+                                size="small"
+                                color={group.confidence > 0.8 ? 'success' : group.confidence > 0.6 ? 'warning' : 'default'}
                                 variant="outlined"
+                                icon={<Star />}
+                                title={`Confidence: ${Math.round(group.confidence * 100)}%`}
                               />
                             )}
                           </Box>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { 
   Box, 
   Typography, 
@@ -20,11 +20,24 @@ import {
   Radio
 } from '@mui/material'
 import { ExpandMore, Delete, Info, CompareArrows, FolderOpen, DriveFileMove, Star } from '@mui/icons-material'
+import { useFileGroupSelection } from '../hooks/useFileGroupSelection'
+import OriginalFileSelector from './OriginalFileSelector'
+import FileSelectionChip from './FileSelectionChip'
 
-export default function SimilarityResults({ similarGroups, onDeleteFiles, onMoveFiles }) {
-  const [selectedFiles, setSelectedFiles] = useState(new Set())
+export default function SimilarityResults({ similarGroups, onDeleteFiles, onMoveFiles, onOperationSuccess, onOperationError }) {
   const [expandedGroups, setExpandedGroups] = useState(new Set())
-  const [originalFiles, setOriginalFiles] = useState(new Map()) // groupId -> filePath
+  const {
+    selectedFiles,
+    originalFiles,
+    handleFileSelection,
+    handleOriginalSelection,
+    handleGroupSelectAll,
+    getFileState,
+    isFileOriginal,
+    getGroupSummary,
+    handleOperationSuccess: handleOpSuccess,
+    handleOperationError: handleOpError
+  } = useFileGroupSelection()
 
   if (!similarGroups || similarGroups.length === 0) {
     return (
@@ -39,75 +52,52 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles, onMove
     )
   }
 
-  const handleFileSelection = (filePath) => {
-    const newSelected = new Set(selectedFiles)
-    if (newSelected.has(filePath)) {
-      newSelected.delete(filePath)
-    } else {
-      newSelected.add(filePath)
-    }
-    setSelectedFiles(newSelected)
-  }
-
-  const handleOriginalSelection = (groupId, filePath) => {
-    const newOriginalFiles = new Map(originalFiles)
-    newOriginalFiles.set(groupId, filePath)
-    setOriginalFiles(newOriginalFiles)
-    
-    // Auto-unselect the newly designated original file if it was selected for deletion
-    const newSelected = new Set(selectedFiles)
-    newSelected.delete(filePath)
-    setSelectedFiles(newSelected)
-  }
-
-  const handleGroupSelection = (groupFiles, groupId, selectAll) => {
-    const newSelected = new Set(selectedFiles)
-    const originalFile = originalFiles.get(groupId)
-    
-    groupFiles.forEach((file) => {
-      if (selectAll) {
-        // Only select files that are not marked as original
-        if (file.path !== originalFile) {
-          newSelected.add(file.path)
-        }
-      } else {
-        newSelected.delete(file.path)
+  // Initialize first file as original for each group
+  React.useEffect(() => {
+    similarGroups.forEach((group, index) => {
+      const groupId = `similarity-${index}`
+      if (!originalFiles.has(groupId) && group.length > 0) {
+        handleOriginalSelection(groupId, group[0].path)
       }
     })
-    setSelectedFiles(newSelected)
-  }
+  }, [similarGroups, originalFiles, handleOriginalSelection])
 
   const handleDeleteSelected = () => {
     if (selectedFiles.size === 0) return
     
-    // Find file handles for selected files
     const filesToDelete = []
-    similarGroups.forEach(group => {
+    similarGroups.forEach((group, index) => {
+      const groupId = `similarity-${index}`
       group.forEach(file => {
-        if (selectedFiles.has(file.path)) {
+        if (selectedFiles.has(file.path) && getFileState(file.path) === 'exists') {
           filesToDelete.push({
-            fileHandle: file.fileHandle,
-            fileName: file.name,
-            filePath: file.path,
-            fileSize: file.size
+            ...file,
+            groupId
           })
         }
       })
     })
     
-    onDeleteFiles(filesToDelete)
+    onDeleteFiles(filesToDelete, handleOpSuccess, handleOpError)
   }
 
   const handleMoveSelected = () => {
-    const filesToMove = similarGroups.flatMap(group => 
-      group.filter(file => selectedFiles.has(file.path))
-        .map(file => ({
-          ...file,
-          groupId: `similarity-${group[0]?.signature || 'unknown'}`
-        }))
-    )
+    if (selectedFiles.size === 0) return
     
-    onMoveFiles(filesToMove)
+    const filesToMove = []
+    similarGroups.forEach((group, index) => {
+      const groupId = `similarity-${index}`
+      group.forEach(file => {
+        if (selectedFiles.has(file.path) && getFileState(file.path) === 'exists') {
+          filesToMove.push({
+            ...file,
+            groupId
+          })
+        }
+      })
+    })
+    
+    onMoveFiles(filesToMove, handleOpSuccess, handleOpError)
   }
 
   const formatFileSize = (bytes) => {
@@ -207,7 +197,7 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles, onMove
       </Paper>
 
       {similarGroups.map((group, groupIndex) => {
-        const groupId = `similar-group-${groupIndex}`
+        const groupId = `similarity-${groupIndex}`
         const isExpanded = expandedGroups.has(groupId)
         const originalFile = originalFiles.get(groupId)
         const hasOriginal = originalFile !== undefined
@@ -242,7 +232,7 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles, onMove
                   disabled={!hasOriginal}
                   onChange={(e) => {
                     e.stopPropagation()
-                    handleGroupSelection(group, groupId, !allSelected)
+                    handleGroupSelectAll(group, !allSelected, groupId)
                   }}
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -301,13 +291,13 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles, onMove
                         position: 'relative'
                       }}
                     >
-                      <Radio
-                        checked={isOriginal}
-                        onChange={() => handleOriginalSelection(groupId, file.path)}
-                        value={file.path}
-                        name={`original-${groupId}`}
-                        title="Select as original file to keep"
-                        sx={{ mr: 1 }}
+                      <OriginalFileSelector
+                        groupId={groupId}
+                        filePath={file.path}
+                        isOriginal={isOriginal}
+                        onOriginalSelect={handleOriginalSelection}
+                        disabled={getFileState(file.path) !== 'exists'}
+                        fileState={getFileState(file.path)}
                       />
                       {isOriginal && (
                         <Chip
@@ -327,16 +317,28 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles, onMove
                       )}
                       <Checkbox
                         checked={isSelected}
-                        disabled={isOriginal}
+                        disabled={isOriginal || getFileState(file.path) !== 'exists'}
                         onChange={() => handleFileSelection(file.path)}
                         title={isOriginal ? "Cannot select original for deletion" : isSelected ? "Unselect to keep this file" : "Select to delete this similar file"}
                       />
                     <ListItemText
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body1">
+                          <Typography 
+                            variant="body1"
+                            sx={{
+                              textDecoration: getFileState(file.path) === 'deleted' ? 'line-through' : 'none',
+                              opacity: getFileState(file.path) === 'exists' ? 1 : 0.7
+                            }}
+                          >
                             {file.name}
                           </Typography>
+                          <FileSelectionChip
+                            fileState={getFileState(file.path)}
+                            isOriginal={isOriginal}
+                            isSelected={isSelected}
+                            destinationPath={null}
+                          />
                           {file.shingleCount && (
                             <Chip
                               label={`${file.shingleCount} patterns`}
