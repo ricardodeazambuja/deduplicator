@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --base=/",
+    "build:github": "vite build --base=/deduplicator/",
     "preview": "vite preview",
     "test": "playwright test",
     "test:ui": "playwright test --ui",

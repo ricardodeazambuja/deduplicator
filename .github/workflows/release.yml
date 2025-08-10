@@ -34,7 +34,7 @@ jobs:
         npm test
       
     - name: 🏗️ Build for Production
-      run: npm run build
+      run: npm run build:github
       
     - name: 📊 Bundle Analysis
       run: |
