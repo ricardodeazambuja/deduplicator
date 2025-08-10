@@ -16,13 +16,16 @@ import {
   Alert,
   IconButton,
   Tooltip,
-  Link
+  Link,
+  Radio,
+  FormControlLabel
 } from '@mui/material'
-import { ExpandMore, Delete, Info, OpenInNew, FolderOpen, DriveFileMove } from '@mui/icons-material'
+import { ExpandMore, Delete, Info, OpenInNew, FolderOpen, DriveFileMove, Star } from '@mui/icons-material'
 
 export default function DuplicateResults({ duplicateGroups, onDeleteFiles, onMoveFiles }) {
   const [selectedFiles, setSelectedFiles] = useState(new Set())
   const [expandedGroups, setExpandedGroups] = useState(new Set())
+  const [originalFiles, setOriginalFiles] = useState(new Map()) // groupId -> filePath
 
   if (!duplicateGroups || duplicateGroups.length === 0) {
     return (
@@ -44,13 +47,25 @@ export default function DuplicateResults({ duplicateGroups, onDeleteFiles, onMov
     setSelectedFiles(newSelected)
   }
 
-  const handleGroupSelection = (groupFiles, selectAll) => {
+  const handleOriginalSelection = (groupId, filePath) => {
+    const newOriginalFiles = new Map(originalFiles)
+    newOriginalFiles.set(groupId, filePath)
+    setOriginalFiles(newOriginalFiles)
+    
+    // Auto-unselect the newly designated original file if it was selected for deletion
     const newSelected = new Set(selectedFiles)
-    groupFiles.forEach((file, index) => {
+    newSelected.delete(filePath)
+    setSelectedFiles(newSelected)
+  }
+
+  const handleGroupSelection = (groupFiles, groupId, selectAll) => {
+    const newSelected = new Set(selectedFiles)
+    const originalFile = originalFiles.get(groupId)
+    
+    groupFiles.forEach((file) => {
       if (selectAll) {
-        // Safety feature: Never select the first file (index 0) when selecting all
-        // This ensures users always keep at least one copy of each duplicate group
-        if (index > 0) {
+        // Only select files that are not marked as original
+        if (file.path !== originalFile) {
           newSelected.add(file.path)
         }
       } else {
@@ -193,9 +208,11 @@ export default function DuplicateResults({ duplicateGroups, onDeleteFiles, onMov
       {duplicateGroups.map((group, groupIndex) => {
         const groupId = `group-${groupIndex}`
         const isExpanded = expandedGroups.has(groupId)
+        const originalFile = originalFiles.get(groupId)
+        const hasOriginal = originalFile !== undefined
         const selectedInGroup = group.filter(file => selectedFiles.has(file.path)).length
-        // For safety, "all selected" means all except the first file (keep one copy)
-        const safeSelectCount = Math.max(0, group.length - 1)
+        // Safe select count is total files minus the original (if selected)
+        const safeSelectCount = hasOriginal ? Math.max(0, group.length - 1) : 0
         const allSelected = selectedInGroup === safeSelectCount && safeSelectCount > 0
         const someSelected = selectedInGroup > 0 && selectedInGroup < safeSelectCount
 
@@ -218,9 +235,10 @@ export default function DuplicateResults({ duplicateGroups, onDeleteFiles, onMov
                 <Checkbox
                   checked={allSelected}
                   indeterminate={someSelected}
+                  disabled={!hasOriginal}
                   onChange={(e) => {
                     e.stopPropagation()
-                    handleGroupSelection(group, !allSelected)
+                    handleGroupSelection(group, groupId, !allSelected)
                   }}
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -229,43 +247,56 @@ export default function DuplicateResults({ duplicateGroups, onDeleteFiles, onMov
                     {group.length} identical files ({formatFileSize(group[0]?.size || 0)})
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Hash: {group[0]?.hash?.substring(0, 16)}... • Keep 1, select {Math.max(0, group.length - 1)}
+                    Hash: {group[0]?.hash?.substring(0, 16)}... • {hasOriginal ? `Original selected, can select ${safeSelectCount}` : 'Select original file first'}
                   </Typography>
                 </Box>
               </Box>
             </AccordionSummary>
             
             <AccordionDetails>
-              <Alert severity="info" sx={{ mb: 2 }}>
+              <Alert severity={hasOriginal ? "info" : "warning"} sx={{ mb: 2 }}>
                 <Typography variant="body2">
                   <Info sx={{ fontSize: 16, mr: 1 }} />
-                  These files are identical. Files marked "Keep" will be preserved. 
-                  Select files to delete, or use the group checkbox to select all but the first file at once.
+                  {hasOriginal 
+                    ? "Select which files to delete. The original file (marked with ⭐) will be preserved."
+                    : "⚠️ Please select which file is the original using the radio buttons below. Then you can select files to delete."
+                  }
                 </Typography>
               </Alert>
               
               <List dense>
                 {group.map((file, fileIndex) => {
                   const isSelected = selectedFiles.has(file.path)
-                  const showKeepIndicator = !isSelected
+                  const isOriginal = originalFile === file.path
+                  const showKeepIndicator = isOriginal || !isSelected
                   
                   return (
                     <ListItem
                       key={`${groupId}-${fileIndex}`}
                       sx={{ 
                         border: 1, 
-                        borderColor: showKeepIndicator ? 'success.main' : 'divider',
+                        borderColor: isOriginal ? 'success.main' : 'divider',
                         borderRadius: 1, 
                         mb: 1,
-                        bgcolor: isSelected ? 'action.selected' : showKeepIndicator ? 'success.50' : 'background.paper',
+                        bgcolor: isSelected ? 'action.selected' : isOriginal ? 'success.light' : 'background.paper',
                         position: 'relative'
                       }}
                     >
-                      {showKeepIndicator && (
+                      <Radio
+                        checked={isOriginal}
+                        onChange={() => handleOriginalSelection(groupId, file.path)}
+                        value={file.path}
+                        name={`original-${groupId}`}
+                        title="Select as original file to keep"
+                        sx={{ mr: 1 }}
+                      />
+                      {isOriginal && (
                         <Chip
-                          label="Keep"
+                          label="Original"
                           size="small"
                           color="success"
+                          variant="filled"
+                          icon={<Star />}
                           sx={{ 
                             position: 'absolute',
                             top: 4,
@@ -277,8 +308,9 @@ export default function DuplicateResults({ duplicateGroups, onDeleteFiles, onMov
                       )}
                       <Checkbox
                         checked={isSelected}
+                        disabled={isOriginal}
                         onChange={() => handleFileSelection(file.path)}
-                        title={isSelected ? "Unselect to keep this file" : "Select to delete this duplicate"}
+                        title={isOriginal ? "Cannot select original for deletion" : isSelected ? "Unselect to keep this file" : "Select to delete this duplicate"}
                       />
                     <ListItemText
                       primary={

@@ -42,7 +42,12 @@ export default function MoveConfirmationDialog({
 
   const handleSelectArchive = async () => {
     setShowArchiveSelector(false)
-    await onSelectArchive()
+    try {
+      await onSelectArchive()
+    } catch (error) {
+      // Re-enable archive selector if selection fails
+      setShowArchiveSelector(true)
+    }
   }
 
   const handleConfirm = () => {
@@ -141,16 +146,14 @@ export default function MoveConfirmationDialog({
                     </Typography>
                   )}
                 </Box>
-                {!archiveDirectory && (
-                  <Button
-                    variant="contained"
-                    startIcon={<CreateNewFolder />}
-                    onClick={handleSelectArchive}
-                    size="small"
-                  >
-                    Choose Location
-                  </Button>
-                )}
+                <Button
+                  variant={archiveDirectory ? "outlined" : "contained"}
+                  startIcon={<CreateNewFolder />}
+                  onClick={handleSelectArchive}
+                  size="small"
+                >
+                  {archiveDirectory ? "Change Location" : "Choose Location"}
+                </Button>
               </Box>
             </Paper>
 

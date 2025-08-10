@@ -44,22 +44,42 @@ export function useFileMoving() {
         parentPath: parentDirHandle.name
       })
       
-      // Now show confirmation dialog
-      setShowMoveConfirmDialog(true)
+      // If we already have files to move, show confirmation dialog
+      if (filesToMove.length > 0) {
+        setShowMoveConfirmDialog(true)
+      }
       
     } catch (error) {
       console.error('Archive directory selection error:', error)
-      setArchiveDirectory(null)
-      setArchiveDirHandle(null)
       
-      if (!error.message.includes('cancelled')) {
-        setMoveResults([{
-          success: false,
-          fileName: 'Archive Selection',
-          error: error.message
-        }])
+      if (error.message.includes('cancelled')) {
+        // For cancellation, just don't change the archive directory
+        // but don't show error unless it's not the first time
+        if (archiveDirectory) {
+          // User was trying to change directory but cancelled, keep existing
+          setShowMoveConfirmDialog(true)
+        } else {
+          // First time and cancelled, show picker again
+          setShowArchivePicker(true)
+        }
+      } else {
+        // Real error occurred
+        setArchiveDirectory(null)
+        setArchiveDirHandle(null)
+        setMoveResults({
+          operations: [{
+            success: false,
+            fileName: 'Archive Selection',
+            error: error.message
+          }],
+          manifest: null,
+          archiveDirectory: null
+        })
         setShowMoveResultsDialog(true)
       }
+      
+      // Re-throw error so MoveConfirmationDialog can handle it
+      throw error
     }
   }
 

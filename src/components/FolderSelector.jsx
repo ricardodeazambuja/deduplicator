@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { Button, Box, Typography, Alert } from '@mui/material'
-import { Folder, FolderOpen } from '@mui/icons-material'
+import { useState, useEffect } from 'react'
+import { Button, Box, Typography, Alert, IconButton } from '@mui/material'
+import { Folder, FolderOpen, Close } from '@mui/icons-material'
 import { FileSystemService } from '../services/fileSystemService'
 
 const fileSystemService = new FileSystemService()
@@ -9,6 +9,16 @@ export default function FolderSelector({ onFolderSelected, disabled }) {
   const [selectedFolder, setSelectedFolder] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+
+  // Auto-dismiss cancellation errors after 5 seconds
+  useEffect(() => {
+    if (error && error.includes('cancelled')) {
+      const timer = setTimeout(() => {
+        setError(null)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [error])
 
   const handleSelectFolder = async () => {
     if (!fileSystemService.isSupported()) {
@@ -24,10 +34,20 @@ export default function FolderSelector({ onFolderSelected, disabled }) {
       setSelectedFolder(dirHandle)
       onFolderSelected(dirHandle)
     } catch (error) {
-      setError(error.message)
+      // Don't show error for user cancellations unless it's a persistent issue
+      if (error.message.includes('cancelled')) {
+        // Only show cancellation message if user repeatedly cancels
+        setError(`Folder selection was cancelled. Click "Choose Folder" to try again.`)
+      } else {
+        setError(error.message)
+      }
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleDismissError = () => {
+    setError(null)
   }
 
   return (
@@ -54,7 +74,20 @@ export default function FolderSelector({ onFolderSelected, disabled }) {
       )}
 
       {error && (
-        <Alert severity="error" sx={{ mt: 2 }}>
+        <Alert 
+          severity={error.includes('cancelled') ? "warning" : "error"} 
+          sx={{ mt: 2 }}
+          action={
+            <IconButton
+              aria-label="close"
+              color="inherit"
+              size="small"
+              onClick={handleDismissError}
+            >
+              <Close fontSize="inherit" />
+            </IconButton>
+          }
+        >
           {error}
         </Alert>
       )}

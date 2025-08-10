@@ -16,13 +16,15 @@ import {
   LinearProgress,
   IconButton,
   Tooltip,
-  Link
+  Link,
+  Radio
 } from '@mui/material'
-import { ExpandMore, Delete, Info, CompareArrows, FolderOpen, DriveFileMove } from '@mui/icons-material'
+import { ExpandMore, Delete, Info, CompareArrows, FolderOpen, DriveFileMove, Star } from '@mui/icons-material'
 
 export default function SimilarityResults({ similarGroups, onDeleteFiles, onMoveFiles }) {
   const [selectedFiles, setSelectedFiles] = useState(new Set())
   const [expandedGroups, setExpandedGroups] = useState(new Set())
+  const [originalFiles, setOriginalFiles] = useState(new Map()) // groupId -> filePath
 
   if (!similarGroups || similarGroups.length === 0) {
     return (
@@ -47,13 +49,25 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles, onMove
     setSelectedFiles(newSelected)
   }
 
-  const handleGroupSelection = (groupFiles, selectAll) => {
+  const handleOriginalSelection = (groupId, filePath) => {
+    const newOriginalFiles = new Map(originalFiles)
+    newOriginalFiles.set(groupId, filePath)
+    setOriginalFiles(newOriginalFiles)
+    
+    // Auto-unselect the newly designated original file if it was selected for deletion
     const newSelected = new Set(selectedFiles)
-    groupFiles.forEach((file, index) => {
+    newSelected.delete(filePath)
+    setSelectedFiles(newSelected)
+  }
+
+  const handleGroupSelection = (groupFiles, groupId, selectAll) => {
+    const newSelected = new Set(selectedFiles)
+    const originalFile = originalFiles.get(groupId)
+    
+    groupFiles.forEach((file) => {
       if (selectAll) {
-        // Safety feature: Never select the first file (index 0) when selecting all
-        // This ensures users always keep at least one copy of each similar group
-        if (index > 0) {
+        // Only select files that are not marked as original
+        if (file.path !== originalFile) {
           newSelected.add(file.path)
         }
       } else {
@@ -195,9 +209,11 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles, onMove
       {similarGroups.map((group, groupIndex) => {
         const groupId = `similar-group-${groupIndex}`
         const isExpanded = expandedGroups.has(groupId)
+        const originalFile = originalFiles.get(groupId)
+        const hasOriginal = originalFile !== undefined
         const selectedInGroup = group.filter(file => selectedFiles.has(file.path)).length
-        // For safety, "all selected" means all except the first file (keep one copy)
-        const safeSelectCount = Math.max(0, group.length - 1)
+        // Safe select count is total files minus the original (if selected)
+        const safeSelectCount = hasOriginal ? Math.max(0, group.length - 1) : 0
         const allSelected = selectedInGroup === safeSelectCount && safeSelectCount > 0
         const someSelected = selectedInGroup > 0 && selectedInGroup < safeSelectCount
         
@@ -223,9 +239,10 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles, onMove
                 <Checkbox
                   checked={allSelected}
                   indeterminate={someSelected}
+                  disabled={!hasOriginal}
                   onChange={(e) => {
                     e.stopPropagation()
-                    handleGroupSelection(group, !allSelected)
+                    handleGroupSelection(group, groupId, !allSelected)
                   }}
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -234,7 +251,7 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles, onMove
                     {group.length} similar files (~{formatFileSize(avgSize)})
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Keep 1, select {Math.max(0, group.length - 1)} similar files
+                    {hasOriginal ? `Original selected, can select ${safeSelectCount}` : 'Select original file first'}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
                     <Chip
@@ -257,36 +274,48 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles, onMove
             </AccordionSummary>
             
             <AccordionDetails>
-              <Alert severity="warning" sx={{ mb: 2 }}>
+              <Alert severity={hasOriginal ? "warning" : "error"} sx={{ mb: 2 }}>
                 <Typography variant="body2">
                   <Info sx={{ fontSize: 16, mr: 1 }} />
-                  These files are similar but not identical. Files marked "Keep" will be preserved.
-                  Please review carefully before deleting - similarity is based on file content patterns, not visual appearance.
+                  {hasOriginal 
+                    ? "These files are similar but not identical. Select files to delete. The original file (marked with ⭐) will be preserved. Please review carefully - similarity is based on file content patterns."
+                    : "⚠️ Please select which file is the original using the radio buttons below. Then you can select similar files to delete."
+                  }
                 </Typography>
               </Alert>
               
               <List dense>
                 {group.map((file, fileIndex) => {
                   const isSelected = selectedFiles.has(file.path)
-                  const showKeepIndicator = !isSelected
+                  const isOriginal = originalFile === file.path
                   
                   return (
                     <ListItem
                       key={`${groupId}-${fileIndex}`}
                       sx={{ 
                         border: 1, 
-                        borderColor: showKeepIndicator ? 'success.main' : 'divider',
+                        borderColor: isOriginal ? 'success.main' : 'divider',
                         borderRadius: 1, 
                         mb: 1,
-                        bgcolor: isSelected ? 'action.selected' : showKeepIndicator ? 'success.50' : 'background.paper',
+                        bgcolor: isSelected ? 'action.selected' : isOriginal ? 'success.light' : 'background.paper',
                         position: 'relative'
                       }}
                     >
-                      {showKeepIndicator && (
+                      <Radio
+                        checked={isOriginal}
+                        onChange={() => handleOriginalSelection(groupId, file.path)}
+                        value={file.path}
+                        name={`original-${groupId}`}
+                        title="Select as original file to keep"
+                        sx={{ mr: 1 }}
+                      />
+                      {isOriginal && (
                         <Chip
-                          label="Keep"
+                          label="Original"
                           size="small"
                           color="success"
+                          variant="filled"
+                          icon={<Star />}
                           sx={{ 
                             position: 'absolute',
                             top: 4,
@@ -298,8 +327,9 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles, onMove
                       )}
                       <Checkbox
                         checked={isSelected}
+                        disabled={isOriginal}
                         onChange={() => handleFileSelection(file.path)}
-                        title={isSelected ? "Unselect to keep this file" : "Select to delete this similar file"}
+                        title={isOriginal ? "Cannot select original for deletion" : isSelected ? "Unselect to keep this file" : "Select to delete this similar file"}
                       />
                     <ListItemText
                       primary={
