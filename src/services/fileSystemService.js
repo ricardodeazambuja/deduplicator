@@ -139,22 +139,100 @@ export class FileSystemService {
     }
   }
 
-  // Create or find 'dedupelocal' directory in parent
-  async createDedupeLocalDirectory(parentDirHandle) {
+  // Validate directory name
+  validateDirectoryName(name) {
+    if (!name || typeof name !== 'string') {
+      return { valid: false, error: 'Directory name is required' }
+    }
+    
+    const trimmed = name.trim()
+    if (trimmed.length === 0) {
+      return { valid: false, error: 'Directory name cannot be empty' }
+    }
+    
+    if (trimmed.length > 255) {
+      return { valid: false, error: 'Directory name too long (max 255 characters)' }
+    }
+    
+    // Invalid characters for directory names
+    const invalidChars = /[<>:"/\\|?*\x00-\x1f]/
+    if (invalidChars.test(trimmed)) {
+      return { valid: false, error: 'Directory name contains invalid characters' }
+    }
+    
+    // Reserved names (Windows)
+    const reserved = ['CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9']
+    if (reserved.includes(trimmed.toUpperCase())) {
+      return { valid: false, error: 'Directory name is reserved' }
+    }
+    
+    return { valid: true, name: trimmed }
+  }
+
+  // Check if directory exists
+  async checkDirectoryExists(parentDirHandle, directoryName) {
     try {
-      // Try to get existing dedupelocal directory
-      let dedupeDirHandle
-      try {
-        dedupeDirHandle = await parentDirHandle.getDirectoryHandle('dedupelocal')
-      } catch (error) {
-        // Directory doesn't exist, create it
-        dedupeDirHandle = await parentDirHandle.getDirectoryHandle('dedupelocal', { create: true })
+      await parentDirHandle.getDirectoryHandle(directoryName)
+      return true
+    } catch (error) {
+      return false
+    }
+  }
+
+  // Generate unique directory name if conflicts exist
+  async generateUniqueDirectoryName(parentDirHandle, baseName) {
+    const validation = this.validateDirectoryName(baseName)
+    if (!validation.valid) {
+      throw new Error(validation.error)
+    }
+    
+    const cleanBaseName = validation.name
+    let candidateName = cleanBaseName
+    let counter = 1
+    
+    while (await this.checkDirectoryExists(parentDirHandle, candidateName)) {
+      candidateName = `${cleanBaseName}_${counter}`
+      counter++
+      
+      // Prevent infinite loops
+      if (counter > 1000) {
+        throw new Error('Unable to generate unique directory name')
+      }
+    }
+    
+    return candidateName
+  }
+
+  // Create custom directory with conflict resolution
+  async createCustomDirectory(parentDirHandle, directoryName, autoResolveConflicts = true) {
+    try {
+      const validation = this.validateDirectoryName(directoryName)
+      if (!validation.valid) {
+        throw new Error(validation.error)
       }
       
-      return dedupeDirHandle
+      let finalDirectoryName = validation.name
+      
+      if (autoResolveConflicts) {
+        finalDirectoryName = await this.generateUniqueDirectoryName(parentDirHandle, validation.name)
+      }
+      
+      const dirHandle = await parentDirHandle.getDirectoryHandle(finalDirectoryName, { create: true })
+      
+      return {
+        handle: dirHandle,
+        name: finalDirectoryName,
+        wasRenamed: finalDirectoryName !== validation.name
+      }
     } catch (error) {
-      throw new Error(`Failed to create dedupelocal directory: ${error.message}`)
+      throw new Error(`Failed to create directory '${directoryName}': ${error.message}`)
     }
+  }
+
+  // Legacy method for backward compatibility
+  async createDedupeLocalDirectory(parentDirHandle) {
+    const result = await this.createCustomDirectory(parentDirHandle, 'dedupelocal', true)
+    return result.handle
   }
 
   // Handle filename conflicts using underscore naming

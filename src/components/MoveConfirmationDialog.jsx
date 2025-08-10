@@ -17,7 +17,9 @@ import {
   LinearProgress,
   Paper,
   IconButton,
-  Tooltip
+  Tooltip,
+  TextField,
+  FormHelperText
 } from '@mui/material'
 import { 
   DriveFileMove, 
@@ -25,20 +27,26 @@ import {
   Warning, 
   Info,
   Close,
-  CreateNewFolder
+  CreateNewFolder,
+  CheckCircle,
+  ErrorOutline,
+  Edit
 } from '@mui/icons-material'
 
 export default function MoveConfirmationDialog({
   open,
   onClose,
   filesToMove = [],
-  archiveDirectory,
+  parentDirectory,
+  customDirectoryName,
+  directoryValidation,
   onSelectArchive,
+  onUpdateDirectoryName,
   onConfirmMove,
   isMoving = false,
   moveProgress = null
 }) {
-  const [showArchiveSelector, setShowArchiveSelector] = useState(!archiveDirectory)
+  const [showArchiveSelector, setShowArchiveSelector] = useState(!parentDirectory)
 
   const handleSelectArchive = async () => {
     setShowArchiveSelector(false)
@@ -51,9 +59,12 @@ export default function MoveConfirmationDialog({
   }
 
   const handleConfirm = () => {
-    if (!archiveDirectory) {
+    if (!parentDirectory) {
       setShowArchiveSelector(true)
       return
+    }
+    if (!directoryValidation.valid) {
+      return // Don't proceed if directory name is invalid
     }
     onConfirmMove()
   }
@@ -128,43 +139,97 @@ export default function MoveConfirmationDialog({
         ) : (
           // Confirmation Content
           <Box>
-            {/* Archive Directory Status */}
-            <Paper sx={{ p: 2, mb: 3, bgcolor: archiveDirectory ? 'success.light' : 'warning.light' }}>
+            {/* Parent Directory Status */}
+            <Paper sx={{ p: 2, mb: 3, bgcolor: parentDirectory ? 'success.light' : 'warning.light' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <FolderOpen />
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="subtitle2">
-                    Archive Directory
+                    Parent Directory
                   </Typography>
-                  {archiveDirectory ? (
+                  {parentDirectory ? (
                     <Typography variant="body2">
-                      Files will be moved to: <strong>{archiveDirectory.path}</strong>
+                      Selected: <strong>{parentDirectory.name}</strong>
                     </Typography>
                   ) : (
                     <Typography variant="body2" color="text.secondary">
-                      No archive directory selected
+                      No parent directory selected
                     </Typography>
                   )}
                 </Box>
                 <Button
-                  variant={archiveDirectory ? "outlined" : "contained"}
+                  variant={parentDirectory ? "outlined" : "contained"}
                   startIcon={<CreateNewFolder />}
                   onClick={handleSelectArchive}
                   size="small"
                 >
-                  {archiveDirectory ? "Change Location" : "Choose Location"}
+                  {parentDirectory ? "Change Location" : "Choose Location"}
                 </Button>
               </Box>
             </Paper>
+
+            {/* Custom Directory Name Input */}
+            {parentDirectory && (
+              <Paper sx={{ p: 2, mb: 3 }}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Archive Directory Name
+                </Typography>
+                <TextField
+                  fullWidth
+                  value={customDirectoryName}
+                  onChange={(e) => onUpdateDirectoryName(e.target.value)}
+                  error={!directoryValidation.valid}
+                  helperText={
+                    directoryValidation.valid ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {directoryValidation.exists ? (
+                          <>
+                            <CheckCircle fontSize="small" color="success" />
+                            Directory exists
+                          </>
+                        ) : (
+                          <>
+                            <Info fontSize="small" color="info" />
+                            Directory will be created
+                          </>
+                        )}
+                        {directoryValidation.willBeRenamed && (
+                          <>
+                            {' • '}
+                            <Warning fontSize="small" color="warning" />
+                            Will be renamed to: {directoryValidation.finalName}
+                          </>
+                        )}
+                      </Box>
+                    ) : (
+                      directoryValidation.error
+                    )
+                  }
+                  placeholder="dedupelocal"
+                  InputProps={{
+                    startAdornment: parentDirectory && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
+                        {parentDirectory.name}/
+                      </Typography>
+                    ),
+                  }}
+                />
+                {directoryValidation.valid && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Full path: <strong>{parentDirectory.name}/{directoryValidation.finalName || customDirectoryName}</strong>
+                  </Typography>
+                )}
+              </Paper>
+            )}
 
             {/* Archive Selector */}
             {showArchiveSelector && (
               <Alert severity="warning" sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" gutterBottom>
-                  Archive Directory Required
+                  Parent Directory Required
                 </Typography>
                 <Typography variant="body2">
-                  Please select a parent directory where the 'dedupelocal' archive folder will be created.
+                  Please select a parent directory where your custom archive folder will be created.
                 </Typography>
               </Alert>
             )}
@@ -214,7 +279,9 @@ export default function MoveConfirmationDialog({
                 What will happen:
               </Typography>
               <Typography variant="body2" component="div">
-                • Files will be moved to: <code>{archiveDirectory?.path || 'dedupelocal'}</code>
+                • Archive directory will be created: <code>{parentDirectory ? `${parentDirectory.name}/${directoryValidation.finalName || customDirectoryName}` : 'Not configured'}</code>
+                <br />
+                • Files will be moved to the archive directory
                 <br />
                 • Name conflicts will be resolved with underscores (file_1.jpg, file_2.jpg)
                 <br />
@@ -227,7 +294,7 @@ export default function MoveConfirmationDialog({
             <Alert severity="warning" icon={<Warning />}>
               <Typography variant="body2">
                 This operation cannot be undone automatically. Files will be moved to the archive directory.
-                Make sure you have the correct archive location selected.
+                Make sure you have the correct parent directory and archive name configured.
               </Typography>
             </Alert>
           </Box>
@@ -243,7 +310,7 @@ export default function MoveConfirmationDialog({
             onClick={handleConfirm}
             variant="contained"
             color="warning"
-            disabled={!archiveDirectory || filesToMove.length === 0}
+            disabled={!parentDirectory || !directoryValidation.valid || filesToMove.length === 0}
             startIcon={<DriveFileMove />}
           >
             Move {filesToMove.length} Files

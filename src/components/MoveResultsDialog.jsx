@@ -39,7 +39,7 @@ export default function MoveResultsDialog({
 }) {
   if (!moveResults) return null
 
-  const { operations = [], manifest, archiveDirectory } = moveResults
+  const { operations = [], manifest, archiveDirectory, directoryCreated } = moveResults
   const successCount = operations.filter(op => op.success).length
   const failureCount = operations.filter(op => !op.success).length
   const totalCount = operations.length
@@ -127,6 +127,13 @@ export default function MoveResultsDialog({
                   <Typography variant="body2">
                     {archiveDirectory}
                   </Typography>
+                  {directoryCreated && (
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                      {directoryCreated.wasRenamed 
+                        ? `Directory created as "${directoryCreated.name}" (renamed from "${directoryCreated.originalName}")` 
+                        : `Directory "${directoryCreated.name}" created successfully`}
+                    </Typography>
+                  )}
                 </Box>
                 <Button
                   size="small"

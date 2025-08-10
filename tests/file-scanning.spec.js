@@ -66,8 +66,8 @@ test.describe('File Scanning Functionality', () => {
     
     await page.locator('button:has-text("Choose Folder")').click()
     
-    // Should show cancellation message
-    await expect(page.locator('text=Directory selection was cancelled')).toBeVisible()
+    // Should show updated cancellation message with dismiss capability
+    await expect(page.locator('text=Folder selection was cancelled. Click "Choose Folder" to try again.')).toBeVisible()
   })
 
   test('should disable controls during scanning', async ({ page }) => {

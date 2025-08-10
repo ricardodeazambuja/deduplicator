@@ -10,17 +10,20 @@ export function useFileMoving() {
   const [showMoveConfirmDialog, setShowMoveConfirmDialog] = useState(false)
   const [showMoveResultsDialog, setShowMoveResultsDialog] = useState(false)
   const [filesToMove, setFilesToMove] = useState([])
-  const [archiveDirectory, setArchiveDirectory] = useState(null)
+  const [parentDirectoryHandle, setParentDirectoryHandle] = useState(null)
+  const [parentDirectory, setParentDirectory] = useState(null)
+  const [customDirectoryName, setCustomDirectoryName] = useState('dedupelocal')
   const [archiveDirHandle, setArchiveDirHandle] = useState(null)
   const [showArchivePicker, setShowArchivePicker] = useState(false)
+  const [directoryValidation, setDirectoryValidation] = useState({ valid: true })
 
   const startMove = async (files) => {
     setFilesToMove(files)
     setMoveResults(null)
     setMoveProgress(null)
     
-    // If no archive directory selected, show picker first
-    if (!archiveDirectory) {
+    // If no parent directory selected, show picker first
+    if (!parentDirectory) {
       setShowArchivePicker(true)
     } else {
       setShowMoveConfirmDialog(true)
@@ -31,18 +34,18 @@ export function useFileMoving() {
     try {
       setShowArchivePicker(false)
       
-      // Select parent directory where dedupelocal will be created
+      // Select parent directory where custom directory will be created
       const parentDirHandle = await fileSystemService.selectArchiveDirectory()
       
-      // Create or get dedupelocal directory
-      const dedupeDirHandle = await fileSystemService.createDedupeLocalDirectory(parentDirHandle)
-      
-      setArchiveDirHandle(dedupeDirHandle)
-      setArchiveDirectory({
-        name: dedupeDirHandle.name,
-        path: `${parentDirHandle.name}/dedupelocal`,
-        parentPath: parentDirHandle.name
+      // Store parent directory info (don't create archive directory yet)
+      setParentDirectoryHandle(parentDirHandle)
+      setParentDirectory({
+        name: parentDirHandle.name,
+        handle: parentDirHandle
       })
+      
+      // Validate current custom directory name
+      await validateCustomDirectoryName(customDirectoryName, parentDirHandle)
       
       // If we already have files to move, show confirmation dialog
       if (filesToMove.length > 0) {
@@ -50,12 +53,12 @@ export function useFileMoving() {
       }
       
     } catch (error) {
-      console.error('Archive directory selection error:', error)
+      console.error('Parent directory selection error:', error)
       
       if (error.message.includes('cancelled')) {
-        // For cancellation, just don't change the archive directory
+        // For cancellation, just don't change the parent directory
         // but don't show error unless it's not the first time
-        if (archiveDirectory) {
+        if (parentDirectory) {
           // User was trying to change directory but cancelled, keep existing
           setShowMoveConfirmDialog(true)
         } else {
@@ -64,12 +67,13 @@ export function useFileMoving() {
         }
       } else {
         // Real error occurred
-        setArchiveDirectory(null)
+        setParentDirectory(null)
+        setParentDirectoryHandle(null)
         setArchiveDirHandle(null)
         setMoveResults({
           operations: [{
             success: false,
-            fileName: 'Archive Selection',
+            fileName: 'Parent Directory Selection',
             error: error.message
           }],
           manifest: null,
@@ -83,12 +87,59 @@ export function useFileMoving() {
     }
   }
 
+  const validateCustomDirectoryName = async (name, parentHandle = parentDirectoryHandle) => {
+    if (!parentHandle) {
+      setDirectoryValidation({ valid: false, error: 'No parent directory selected' })
+      return
+    }
+
+    const validation = fileSystemService.validateDirectoryName(name)
+    if (!validation.valid) {
+      setDirectoryValidation(validation)
+      return
+    }
+
+    try {
+      const exists = await fileSystemService.checkDirectoryExists(parentHandle, validation.name)
+      const uniqueName = await fileSystemService.generateUniqueDirectoryName(parentHandle, validation.name)
+      
+      setDirectoryValidation({
+        valid: true,
+        name: validation.name,
+        finalName: uniqueName,
+        exists,
+        willBeRenamed: uniqueName !== validation.name
+      })
+    } catch (error) {
+      setDirectoryValidation({
+        valid: false,
+        error: error.message
+      })
+    }
+  }
+
+  const updateCustomDirectoryName = (name) => {
+    setCustomDirectoryName(name)
+    validateCustomDirectoryName(name)
+  }
+
   const confirmMove = async () => {
     setShowMoveConfirmDialog(false)
     setIsMoving(true)
     setMoveProgress({ progress: 0, completed: 0, total: filesToMove.length })
 
     try {
+      // First, create the archive directory now (only when user confirms)
+      const directoryResult = await fileSystemService.createCustomDirectory(
+        parentDirectoryHandle,
+        customDirectoryName,
+        true // auto-resolve conflicts
+      )
+
+      setArchiveDirHandle(directoryResult.handle)
+      
+      const archiveDirectoryPath = `${parentDirectory.name}/${directoryResult.name}`
+
       const { results, manifest } = await fileSystemService.moveFiles(
         filesToMove.map(file => ({
           fileHandle: file.fileHandle,
@@ -97,7 +148,7 @@ export function useFileMoving() {
           size: file.size,
           groupId: file.groupId
         })),
-        archiveDirHandle,
+        directoryResult.handle,
         (progressData) => {
           setMoveProgress({
             progress: progressData.progress,
@@ -112,7 +163,12 @@ export function useFileMoving() {
       setMoveResults({ 
         operations: results, 
         manifest,
-        archiveDirectory: archiveDirectory.path
+        archiveDirectory: archiveDirectoryPath,
+        directoryCreated: {
+          name: directoryResult.name,
+          wasRenamed: directoryResult.wasRenamed,
+          originalName: customDirectoryName
+        }
       })
       setShowMoveResultsDialog(true)
 
@@ -125,7 +181,7 @@ export function useFileMoving() {
           error: error.message
         }],
         manifest: null,
-        archiveDirectory: archiveDirectory?.path
+        archiveDirectory: parentDirectory ? `${parentDirectory.name}/${customDirectoryName}` : null
       })
       setShowMoveResultsDialog(true)
     } finally {
@@ -149,8 +205,11 @@ export function useFileMoving() {
   }
 
   const clearArchiveDirectory = () => {
-    setArchiveDirectory(null)
+    setParentDirectory(null)
+    setParentDirectoryHandle(null)
     setArchiveDirHandle(null)
+    setCustomDirectoryName('dedupelocal')
+    setDirectoryValidation({ valid: true })
   }
 
   const openArchiveDirectory = async () => {
@@ -184,11 +243,14 @@ export function useFileMoving() {
     showMoveResultsDialog,
     showArchivePicker,
     filesToMove,
-    archiveDirectory,
+    parentDirectory,
+    customDirectoryName,
+    directoryValidation,
     
     // Actions
     startMove,
     selectArchiveDirectory,
+    updateCustomDirectoryName,
     confirmMove,
     cancelMove,
     closeMoveResults,

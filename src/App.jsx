@@ -97,9 +97,12 @@ function App() {
     showMoveResultsDialog,
     showArchivePicker,
     filesToMove,
-    archiveDirectory,
+    parentDirectory,
+    customDirectoryName,
+    directoryValidation,
     startMove,
     selectArchiveDirectory,
+    updateCustomDirectoryName,
     confirmMove,
     cancelMove,
     closeMoveResults
@@ -353,8 +356,11 @@ function App() {
             open={showMoveConfirmDialog || showArchivePicker}
             onClose={cancelMove}
             filesToMove={filesToMove}
-            archiveDirectory={archiveDirectory}
+            parentDirectory={parentDirectory}
+            customDirectoryName={customDirectoryName}
+            directoryValidation={directoryValidation}
             onSelectArchive={selectArchiveDirectory}
+            onUpdateDirectoryName={updateCustomDirectoryName}
             onConfirmMove={confirmMove}
             isMoving={isMoving}
             moveProgress={moveProgress}
