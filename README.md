@@ -31,6 +31,8 @@ Dedupe-Local is a privacy-first file deduplication tool that runs entirely in yo
 - **Directory Usage Modes**: Choose between "use directory directly" or "create new subdirectory"
 - **Move Manifest**: JSON log of all file operations for tracking and audit
 - **Export Reports**: Generate comprehensive JSON reports with metadata
+- **Unified File Selection**: Consistent radio button + checkbox interface across all scan modes
+- **File State Tracking**: Visual indicators for deleted/moved files with operation history
 
 ### ⚡ **Performance Optimized**
 - **Web Workers**: Non-blocking background processing
@@ -168,7 +170,9 @@ src/
 │   ├── MultiCriteriaSettings.jsx # Advanced multi-criteria configuration
 │   ├── SessionManager.jsx   # Save/load functionality
 │   ├── DeleteConfirmationDialog.jsx # Safe deletion workflow
-│   └── PerformanceWarning.jsx # Memory optimization alerts
+│   ├── PerformanceWarning.jsx # Memory optimization alerts
+│   ├── FileSelectionChip.jsx # Visual file state indicators
+│   └── OriginalFileSelector.jsx # Reusable original file selection
 ├── workers/                 # Web Workers (background processing)
 │   ├── hashWorker.js       # SHA-256 hashing with SubtleCrypto
 │   └── similarityWorker.js # MinHash + Shingling algorithm
@@ -183,7 +187,8 @@ src/
 │   └── appStore.js         # Zustand global state
 ├── hooks/                  # Custom React Hooks
 │   ├── useFileScanning.js  # Scan orchestration logic
-│   └── useFileDeletion.js  # Safe deletion workflow
+│   ├── useFileDeletion.js  # Safe deletion workflow
+│   └── useFileGroupSelection.js # Unified file selection state management
 └── utils/                  # Utilities
     └── performanceOptimizer.js # Memory & performance monitoring
 ```
@@ -364,6 +369,8 @@ Please report security vulnerabilities privately:
 - [x] Filename-based duplicate detection ✅ **COMPLETED**
 - [x] Multi-criteria matching with priority ✅ **COMPLETED**  
 - [x] Flexible file move operations with directory options ✅ **COMPLETED**
+- [x] Unified file selection system across all scan modes ✅ **COMPLETED**
+- [x] File state tracking with visual indicators ✅ **COMPLETED**
 - [ ] Enhanced HTML/Markdown reports with charts
 - [ ] Dark mode and UI improvements
 
