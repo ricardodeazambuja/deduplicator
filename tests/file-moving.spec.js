@@ -213,12 +213,12 @@ test.describe('Move Workflow Integration', () => {
       
       for (const name of testNames) {
         // Simulate validation logic
-        const isValid = name && 
-                        typeof name === 'string' &&
-                        name.trim().length > 0 && 
-                        name.length <= 255 && 
-                        !/[<>:"/\\|?*\x00-\x1f]/.test(name) &&
-                        !['CON', 'PRN', 'AUX', 'NUL'].includes(name.toUpperCase())
+        const isValid = !!(name && 
+                          typeof name === 'string' &&
+                          name.trim().length > 0 && 
+                          name.length <= 255 && 
+                          !/[<>:"/\\|?*\x00-\x1f]/.test(name) &&
+                          !['CON', 'PRN', 'AUX', 'NUL'].includes(name.toUpperCase()))
         
         results.push({ name, valid: isValid })
       }
