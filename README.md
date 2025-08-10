@@ -27,6 +27,8 @@ Dedupe-Local is a privacy-first file deduplication tool that runs entirely in yo
 ### 💾 **Smart Management**
 - **Session Persistence**: Save/load scan results using IndexedDB
 - **Safe Deletion**: Multi-confirmation workflow with detailed warnings
+- **Move to Archive**: Move duplicates to organized 'dedupelocal' archive directory
+- **Move Manifest**: JSON log of all file operations for tracking and audit
 - **Export Reports**: Generate comprehensive JSON reports with metadata
 
 ### ⚡ **Performance Optimized**
@@ -41,8 +43,9 @@ Dedupe-Local is a privacy-first file deduplication tool that runs entirely in yo
 2. **Select Folder**: Click "Choose Folder" and grant permissions
 3. **Choose Mode**: Select detection mode (Exact, Filename, Similarity, or Multi-Criteria)
 4. **Configure Settings**: Adjust thresholds and criteria as needed
-5. **Start Scan**: Review results and manage duplicates safely
-6. **Save Results**: Optional - save sessions for later review
+5. **Start Scan**: Review results and choose how to handle duplicates
+6. **Manage Files**: Delete unwanted files OR move them to archive directory
+7. **Save Results**: Optional - save sessions for later review
 
 ### For Developers
 
@@ -359,7 +362,7 @@ Please report security vulnerabilities privately:
 ### Version 2.1 (Next Release) 
 - [x] Filename-based duplicate detection ✅ **COMPLETED**
 - [x] Multi-criteria matching with priority ✅ **COMPLETED**  
-- [ ] File move operations (not just delete)
+- [x] File move operations (not just delete) ✅ **IN PROGRESS**
 - [ ] Enhanced HTML/Markdown reports with charts
 - [ ] Dark mode and UI improvements
 

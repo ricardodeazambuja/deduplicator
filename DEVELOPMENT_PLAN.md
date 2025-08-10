@@ -362,6 +362,49 @@ Building a client-side file deduplicator web app with exact and similarity match
 
 ---
 
+## Stage 10: Move Duplicates to Archive Feature
+**Goal**: Add safe alternative to deletion by moving duplicates to archive directory
+**Success Criteria**: 
+- Users can select files and move (not delete) to 'dedupelocal' archive directory
+- Flat directory structure with underscore naming conflicts (file_1.jpg, file_2.jpg)
+- Generate JSON manifest/log of all move operations with full metadata
+- Archive directory selection with auto-create 'dedupelocal' folder option
+- Move functionality alongside existing delete functionality (both available)
+- Same file selection behavior as deletion workflow
+- Archive directory not remembered unless user saves session
+- Move confirmation and progress dialogs similar to deletion workflow
+
+**Tests**: 
+- File moving operations with proper name conflict resolution
+- Archive directory creation and selection workflow
+- Manifest generation accuracy and completeness
+- UI workflow for move vs delete selection (both buttons available)
+- Error handling for move operation failures
+- File selection behavior identical to deletion workflow
+
+**Status**: In Progress
+
+### Development Log - Stage 10
+**2025-08-10 Started** - Move Duplicates to Archive Feature Implementation
+- 📋 **Documentation Phase**: Updated DEVELOPMENT_PLAN.md and README.md with feature specifications
+- 🧪 **Testing Phase**: Writing comprehensive Playwright tests for move functionality
+- ⚙️ **Implementation Phase**: Extending FileSystemService, creating useFileMoving hook, updating UI components
+
+**Technical Specifications:**
+- **Archive Structure**: Flat directory `/path/to/dedupelocal/` (user selected parent)
+- **Name Conflicts**: Underscore format `file_1.jpg`, `file_2.jpg`, etc.
+- **Manifest Format**: JSON log with timestamps, paths, metadata for tracking
+- **UI Integration**: Move button alongside Delete button, same selection patterns
+- **Session Handling**: Archive directory only saved if user clicks "Save Session"
+
+**File Operations Required:**
+- `moveFile(sourceHandle, targetDirHandle, newName)` - Move with File System Access API
+- `createDedupeLocalDirectory(parentHandle)` - Auto-create archive folder
+- `handleNameConflicts(targetDir, fileName)` - Resolve duplicate filenames
+- `createMoveManifest(operations)` - Generate comprehensive operation log
+
+---
+
 ## Final Status
 **Overall Project Status**: ✅ **PRODUCTION READY WITH ADVANCED FEATURES**
 **Latest Update**: 2025-08-09 19:30 UTC
@@ -419,7 +462,7 @@ Building a client-side file deduplicator web app with exact and similarity match
 
 #### **Long-term Roadmap (v2.0+):**
 1. **🔍 Advanced File Operations**
-   - File move operations (organize instead of delete)
+   - ✅ File move operations (organize instead of delete) - IN PROGRESS
    - Backup/restore functionality (create backups before deletion)
    - Advanced filtering (size, date, extension-based)
    - Fuzzy content matching improvements

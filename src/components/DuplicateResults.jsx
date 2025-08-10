@@ -18,9 +18,9 @@ import {
   Tooltip,
   Link
 } from '@mui/material'
-import { ExpandMore, Delete, Info, OpenInNew, FolderOpen } from '@mui/icons-material'
+import { ExpandMore, Delete, Info, OpenInNew, FolderOpen, DriveFileMove } from '@mui/icons-material'
 
-export default function DuplicateResults({ duplicateGroups, onDeleteFiles }) {
+export default function DuplicateResults({ duplicateGroups, onDeleteFiles, onMoveFiles }) {
   const [selectedFiles, setSelectedFiles] = useState(new Set())
   const [expandedGroups, setExpandedGroups] = useState(new Set())
 
@@ -79,6 +79,18 @@ export default function DuplicateResults({ duplicateGroups, onDeleteFiles }) {
     })
     
     onDeleteFiles(filesToDelete)
+  }
+
+  const handleMoveSelected = () => {
+    const filesToMove = duplicateGroups.flatMap(group => 
+      group.filter(file => selectedFiles.has(file.path))
+        .map(file => ({
+          ...file,
+          groupId: `exact-${group[0]?.hash || 'unknown'}`
+        }))
+    )
+    
+    onMoveFiles(filesToMove)
   }
 
   const formatFileSize = (bytes) => {
@@ -163,7 +175,16 @@ export default function DuplicateResults({ duplicateGroups, onDeleteFiles }) {
               onClick={handleDeleteSelected}
               size="small"
             >
-              Delete Selected Files
+              Delete Selected ({selectedFiles.size})
+            </Button>
+            <Button
+              variant="contained"
+              color="warning"
+              startIcon={<DriveFileMove />}
+              onClick={handleMoveSelected}
+              size="small"
+            >
+              Move Selected ({selectedFiles.size})
             </Button>
           </Box>
         )}

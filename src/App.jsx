@@ -14,6 +14,8 @@ import ProgressTracker from './components/ProgressTracker'
 import DuplicateResults from './components/DuplicateResults'
 import DeleteConfirmationDialog from './components/DeleteConfirmationDialog'
 import DeleteResultsDialog from './components/DeleteResultsDialog'
+import MoveConfirmationDialog from './components/MoveConfirmationDialog'
+import MoveResultsDialog from './components/MoveResultsDialog'
 import SessionManager from './components/SessionManager'
 import SimilarityThresholdControl from './components/SimilarityThresholdControl'
 import FilenameThresholdControl from './components/FilenameThresholdControl'
@@ -25,6 +27,7 @@ import PerformanceWarning from './components/PerformanceWarning'
 import { useAppStore } from './stores/appStore'
 import { useFileScanning } from './hooks/useFileScanning'
 import { useFileDeletion } from './hooks/useFileDeletion'
+import { useFileMoving } from './hooks/useFileMoving'
 
 const theme = createTheme({
   palette: {
@@ -86,6 +89,22 @@ function App() {
     closeResults
   } = useFileDeletion()
 
+  const {
+    isMoving,
+    moveProgress,
+    moveResults,
+    showMoveConfirmDialog,
+    showMoveResultsDialog,
+    showArchivePicker,
+    filesToMove,
+    archiveDirectory,
+    startMove,
+    selectArchiveDirectory,
+    confirmMove,
+    cancelMove,
+    closeMoveResults
+  } = useFileMoving()
+
   const handleStartScan = () => {
     if (selectedFolder) {
       startScan(selectedFolder)
@@ -94,6 +113,10 @@ function App() {
 
   const handleDeleteFiles = (filesToDelete) => {
     startDeletion(filesToDelete)
+  }
+
+  const handleMoveFiles = (filesToMove) => {
+    startMove(filesToMove)
   }
 
   const handleLoadSession = (session) => {
@@ -281,6 +304,7 @@ function App() {
             <DuplicateResults
               duplicateGroups={duplicateGroups}
               onDeleteFiles={handleDeleteFiles}
+              onMoveFiles={handleMoveFiles}
             />
           )}
 
@@ -288,6 +312,7 @@ function App() {
             <SimilarityResults
               similarGroups={similarGroups}
               onDeleteFiles={handleDeleteFiles}
+              onMoveFiles={handleMoveFiles}
             />
           )}
 
@@ -295,6 +320,7 @@ function App() {
             <FilenameResults
               groups={filenameGroups}
               onFileDelete={handleDeleteFiles}
+              onFileMove={handleMoveFiles}
               selectedFiles={selectedFilenameFiles}
               onFileSelectionChange={setSelectedFilenameFiles}
             />
@@ -304,6 +330,7 @@ function App() {
             <MultiCriteriaResults
               groups={multiCriteriaGroups}
               onFileDelete={handleDeleteFiles}
+              onFileMove={handleMoveFiles}
             />
           )}
 
@@ -320,6 +347,23 @@ function App() {
             open={showResultsDialog}
             onClose={closeResults}
             deleteResults={deleteResults}
+          />
+
+          <MoveConfirmationDialog
+            open={showMoveConfirmDialog || showArchivePicker}
+            onClose={cancelMove}
+            filesToMove={filesToMove}
+            archiveDirectory={archiveDirectory}
+            onSelectArchive={selectArchiveDirectory}
+            onConfirmMove={confirmMove}
+            isMoving={isMoving}
+            moveProgress={moveProgress}
+          />
+
+          <MoveResultsDialog
+            open={showMoveResultsDialog}
+            onClose={closeMoveResults}
+            moveResults={moveResults}
           />
 
           {/* License Notice */}

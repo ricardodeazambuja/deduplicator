@@ -18,9 +18,9 @@ import {
   Tooltip,
   Link
 } from '@mui/material'
-import { ExpandMore, Delete, Info, CompareArrows, FolderOpen } from '@mui/icons-material'
+import { ExpandMore, Delete, Info, CompareArrows, FolderOpen, DriveFileMove } from '@mui/icons-material'
 
-export default function SimilarityResults({ similarGroups, onDeleteFiles }) {
+export default function SimilarityResults({ similarGroups, onDeleteFiles, onMoveFiles }) {
   const [selectedFiles, setSelectedFiles] = useState(new Set())
   const [expandedGroups, setExpandedGroups] = useState(new Set())
 
@@ -82,6 +82,18 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles }) {
     })
     
     onDeleteFiles(filesToDelete)
+  }
+
+  const handleMoveSelected = () => {
+    const filesToMove = similarGroups.flatMap(group => 
+      group.filter(file => selectedFiles.has(file.path))
+        .map(file => ({
+          ...file,
+          groupId: `similarity-${group[0]?.signature || 'unknown'}`
+        }))
+    )
+    
+    onMoveFiles(filesToMove)
   }
 
   const formatFileSize = (bytes) => {
@@ -165,7 +177,16 @@ export default function SimilarityResults({ similarGroups, onDeleteFiles }) {
               onClick={handleDeleteSelected}
               size="small"
             >
-              Delete Selected Files
+              Delete Selected ({selectedFiles.size})
+            </Button>
+            <Button
+              variant="contained"
+              color="warning"
+              startIcon={<DriveFileMove />}
+              onClick={handleMoveSelected}
+              size="small"
+            >
+              Move Selected ({selectedFiles.size})
             </Button>
           </Box>
         )}

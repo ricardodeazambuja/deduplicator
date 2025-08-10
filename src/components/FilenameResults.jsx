@@ -28,13 +28,15 @@ import {
   Delete,
   Info,
   FileCopy,
-  Insights
+  Insights,
+  DriveFileMove
 } from '@mui/icons-material'
 import { formatBytes } from '../utils/formatters'
 
 export default function FilenameResults({ 
   groups = [], 
   onFileDelete, 
+  onFileMove,
   isDeleting = false,
   selectedFiles = new Set(),
   onFileSelectionChange
@@ -204,15 +206,26 @@ export default function FilenameResults({
                   </Button>
                   
                   {selectedInGroup.length > 0 && (
-                    <Button
-                      size="small"
-                      startIcon={<Delete />}
-                      onClick={() => onFileDelete(selectedInGroup.map(f => f.path))}
-                      disabled={isDeleting}
-                      color="error"
-                    >
-                      Delete Selected ({selectedInGroup.length})
-                    </Button>
+                    <>
+                      <Button
+                        size="small"
+                        startIcon={<Delete />}
+                        onClick={() => onFileDelete(selectedInGroup.map(f => f.path))}
+                        disabled={isDeleting}
+                        color="error"
+                      >
+                        Delete Selected ({selectedInGroup.length})
+                      </Button>
+                      <Button
+                        size="small"
+                        startIcon={<DriveFileMove />}
+                        onClick={() => onFileMove(selectedInGroup)}
+                        disabled={isDeleting}
+                        color="warning"
+                      >
+                        Move Selected ({selectedInGroup.length})
+                      </Button>
+                    </>
                   )}
                 </Stack>
               </Box>
