@@ -1,23 +1,23 @@
 # Dedupe-Local - Client-Side File Deduplicator
 
-> A sophisticated web application for finding and managing duplicate files with complete privacy - all processing happens in your browser.
+> Find and manage duplicate files with complete privacy - all processing happens in your browser.
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![Test Coverage](https://img.shields.io/badge/coverage-97.7%25-green)
-![Bundle Size](https://img.shields.io/badge/bundle-158KB%20gzipped-blue)
+![Bundle Size](https://img.shields.io/badge/bundle-185KB%20gzipped-blue)
 ![Browser Support](https://img.shields.io/badge/browser-Chrome%2086%2B-blue)
 
 ## 🎯 Overview
 
-Dedupe-Local is a privacy-first file deduplication tool that runs entirely in your browser. No uploads, no servers, no data collection - just powerful duplicate detection using advanced algorithms.
+Dedupe-Local is a privacy-first file deduplication tool that runs entirely in your browser. No uploads, no servers, no data collection - just powerful duplicate detection.
 
 ## ✨ Features
 
-### 🔍 **Multiple Detection Modes**
-- **Exact Match**: Lightning-fast SHA-256 hashing for identical files
+### 🔍 **Detection Modes**
+- **Exact Match**: SHA-256 hashing for identical files
 - **Filename Match**: Smart filename analysis ignoring copies, versions, and variations  
-- **Content Similarity**: Advanced MinHash + Shingling for similar binary files (ANY file type)
-- **Multi-Criteria**: Advanced combination of all detection methods with configurable priorities
+- **Content Similarity**: MinHash + Shingling for similar binary files
+- **Multi-Criteria**: Combination of all detection methods with configurable priorities
 
 ### 🛡️ **Privacy & Security**
 - **100% Client-Side**: Zero data transmission, complete privacy
@@ -67,41 +67,15 @@ npm test            # Run Playwright tests
 
 ## 🌐 Deployment
 
-### Static Hosting (Recommended)
+### Static Hosting
+Deploy the built `dist/` folder to any static hosting service:
 
-**Netlify** (Easiest)
-```bash
-# Build and deploy
-npm run build
-# Drag dist/ folder to Netlify dashboard
-```
+- **Netlify**: Drag `dist/` folder to dashboard
+- **Vercel**: Connect GitHub repo (build: `npm run build`, output: `dist`)  
+- **GitHub Pages**: Upload `dist/` contents to gh-pages branch
+- **Any HTTP Server**: Serve the `dist/` directory
 
-**Vercel**
-```bash
-# Connect GitHub repo
-# Build command: npm run build
-# Output directory: dist
-```
-
-**GitHub Pages**
-```bash
-npm run build
-# Upload dist/ contents to gh-pages branch
-```
-
-**Any HTTP Server**
-```bash
-npm run build
-# Serve dist/ directory
-python -m http.server 8080  # Example with Python
-```
-
-### Deployment Checklist
-- ✅ Built with `npm run build`
-- ✅ `dist/` directory contains all assets
-- ✅ HTTPS required for File System Access API
-- ✅ Modern browser requirements documented
-- ✅ No server-side configuration needed
+**Requirements**: HTTPS needed for File System Access API
 
 ## 💻 Browser Requirements
 
@@ -201,17 +175,8 @@ src/
 - **Storage**: IndexedDB via `idb` wrapper
 - **Algorithms**: SHA-256 (exact), Levenshtein distance (filename), MinHash + Shingling (similarity)
 
-### Bundle Analysis
-```
-dist/
-├── index.html           # 0.58 KB
-├── assets/
-│   ├── index-*.js      # 217 KB (68 KB gzipped) - Main app
-│   ├── ui-*.js         # 281 KB (84 KB gzipped) - MUI components
-│   ├── vendor-*.js     # 12 KB (4.2 KB gzipped) - React/DOM
-│   └── utils-*.js      # 4 KB (1.7 KB gzipped) - Utilities
-```
-**Total**: 514 KB (~158 KB gzipped)
+### Bundle Size
+**Total**: ~640KB (~185KB gzipped)
 
 ## 🧪 Testing
 
@@ -225,29 +190,9 @@ npm test specific.spec.js  # Run specific test file
 ```
 
 ### Test Categories
-- **Basic Functionality** (9/9): Core UI, navigation, mode switching
-- **Browser Compatibility** (9/9): API support, responsive design
-- **File Operations** (6/6): Scanning, progress, error handling
-- **Deletion Workflow** (6/6): Safety confirmations, error handling
-- **Session Management** (6/6): Save/load, IndexedDB, exports
-- **Similarity Detection** (5/6): Threshold controls, algorithm testing
-- **Static Deployment** (5/5): Production build verification
-
-### Continuous Integration
-```yaml
-# .github/workflows/test.yml (example)
-name: Test Suite
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: npm install
-      - run: npm run build
-      - run: npm test
-```
+- Basic Functionality, Browser Compatibility, File Operations
+- Deletion Workflow, Session Management, Similarity Detection  
+- Static Deployment verification
 
 ## 🤝 Contributing
 
@@ -291,39 +236,15 @@ npm run build -- --analyze
 ```
 
 ### Contribution Areas
-
-**High Priority:**
-- [x] 📁 **File move operations** - Alternative to deletion (organize instead of delete) ✅ **COMPLETED**
-- 📊 **Enhanced reporting** - HTML/Markdown exports with links and charts
-- 🎨 **UI/UX improvements** - Dark mode, animations, mobile responsiveness
-- 💾 **Backup/Recovery** - Integration with cloud storage APIs
-- 🔧 **Advanced filters** - Size-based, date-based, and extension-based filtering
-
-**Medium Priority:**
-- 🌐 **Browser compatibility** - Polyfills for wider support
-- ⚡ **Performance optimizations** - Large dataset handling
-- 🧪 **Additional algorithms** - Other similarity detection methods
-- 📱 **Mobile optimization** - Touch-friendly interface
-- 🔧 **Configuration options** - Advanced user settings
-
-**Documentation:**
-- 📖 **User guides** - Step-by-step tutorials
-- 🎥 **Video demos** - Usage examples
-- 🔬 **Algorithm explanations** - Technical deep-dives
-- 🌍 **Internationalization** - Multi-language support
-
-### Code of Conduct
-- Be respectful and inclusive
-- Focus on constructive feedback
-- Help newcomers learn and contribute
-- Prioritize user privacy and security
-- Follow ethical AI development practices
+- **Enhanced reporting** - HTML/Markdown exports
+- **UI/UX improvements** - Dark mode, animations, mobile responsiveness  
+- **Performance optimizations** - Large dataset handling
+- **Browser compatibility** - Polyfills for wider support
+- **Advanced filters** - Size, date, extension-based filtering
 
 ### Getting Help
 - 💬 **GitHub Discussions**: Ask questions, share ideas
 - 🐛 **Issues**: Report bugs with reproduction steps
-- 📧 **Email**: For security vulnerabilities (private disclosure)
-- 📖 **Wiki**: Check documentation and FAQs
 
 ## 🛡️ Security & Privacy
 
@@ -342,10 +263,7 @@ npm run build -- --analyze
 - **Input Validation**: Robust error handling for edge cases
 
 ### Reporting Security Issues
-Please report security vulnerabilities privately:
-1. **Email**: security@dedupe-local.dev (if available)
-2. **GitHub**: Use private vulnerability disclosure
-3. **Include**: Detailed reproduction steps, impact assessment
+Please report security vulnerabilities via GitHub's private vulnerability disclosure.
 
 ## 📊 Performance Metrics
 
@@ -357,34 +275,18 @@ Please report security vulnerabilities privately:
 | Large | 10,000 | 2-5 min | 15-45 min | 400-800 MB |
 
 ### Optimization Features
-- **Automatic Batching**: Processes files in optimal chunks
-- **Memory Monitoring**: Warns before browser limits
-- **Worker Pool Scaling**: Adapts to device capabilities
-- **Progress Estimation**: Real-time ETA calculations
-- **Resource Cleanup**: Automatic garbage collection hints
+- Automatic batching, memory monitoring, worker pool scaling
+- Real-time progress with ETA calculations
+- Automatic resource cleanup
 
 ## 🔮 Roadmap
 
-### Version 2.1 (Current Release) 
-- [x] Filename-based duplicate detection ✅ **COMPLETED**
-- [x] Multi-criteria matching with priority ✅ **COMPLETED**  
-- [x] Flexible file move operations with directory options ✅ **COMPLETED**
-- [x] Unified file selection system across all scan modes ✅ **COMPLETED**
-- [x] File state tracking with visual indicators ✅ **COMPLETED**
-- [ ] Enhanced HTML/Markdown reports with charts
+### Upcoming Features
+- [ ] Enhanced HTML/Markdown reports
 - [ ] Dark mode and UI improvements
-
-### Version 2.2 (Future)
-- [ ] Cross-platform desktop app (Tauri/Electron)
+- [ ] Cross-platform desktop app
 - [ ] Advanced similarity algorithms
-- [ ] Batch processing improvements
-- [ ] Plugin architecture for extensibility
-
-### Long-term Vision
 - [ ] Mobile app versions
-- [ ] Integration with cloud storage APIs
-- [ ] Machine learning-based similarity detection
-- [ ] Collaborative features (shared sessions)
 
 ## 📄 License
 
@@ -392,22 +294,11 @@ Please report security vulnerabilities privately:
 
 This project is open source and free for personal and commercial use.
 
-## 🙏 Acknowledgments
-
-- **Claude Code**: AI-assisted development with ethical practices
-- **React Team**: For the excellent React 19 framework
-- **Material-UI**: For the comprehensive component library
-- **Vite Team**: For the blazing-fast build tool
-- **Playwright**: For reliable end-to-end testing
-- **Open Source Community**: For inspiration and best practices
-
 ## 📞 Support
 
-- 📖 **Documentation**: Check the wiki and README
 - 💬 **GitHub Discussions**: Community support
-- 🐛 **Bug Reports**: Use GitHub Issues with templates
+- 🐛 **Bug Reports**: Use GitHub Issues
 - 💡 **Feature Requests**: GitHub Issues with enhancement label
-- ⭐ **Show Support**: Star the repository!
 
 ---
 
