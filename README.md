@@ -246,24 +246,70 @@ npm run build -- --analyze
 - 💬 **GitHub Discussions**: Ask questions, share ideas
 - 🐛 **Issues**: Report bugs with reproduction steps
 
-## 🛡️ Security & Privacy
+## 🛡️ Privacy & Security
 
-### Privacy Guarantees
-- ✅ **Zero Data Transmission**: Files never leave your device
-- ✅ **No Analytics**: No tracking, telemetry, or data collection
-- ✅ **Local Processing**: All algorithms run in your browser
-- ✅ **Secure APIs**: Modern browser security standards
-- ✅ **Open Source**: Fully auditable codebase
+### Your Files Never Leave Your Device
+
+**We guarantee complete privacy.** Here's exactly how:
+
+#### ✅ **Client-Side Processing Only**
+- All file analysis happens entirely in your browser's memory
+- No uploads, downloads, or data transmission of any kind
+- Files are processed using Web Workers in your browser
+
+#### ✅ **No Server Backend**
+- This app is hosted as **static files** on GitHub Pages
+- No server exists that could access your data
+- Static hosting means no database, no logging, no data collection
+
+#### ✅ **Zero Network Requests During Processing**
+- **Verify yourself**: Press `F12` → `Network` tab while using the app
+- You'll see ZERO network requests during file processing
+- Only the initial page load requires network access
+
+#### ✅ **Open Source Transparency**
+- **Complete source code**: Available on GitHub for inspection
+- **No hidden code**: What you see is exactly what runs
+- **Community audited**: Anyone can verify the privacy claims
+
+#### ✅ **Modern Browser Security**
+- **File System Access API**: Secure, permission-based folder access
+- **Content Security Policy**: Prevents unauthorized network requests
+- **SubtleCrypto API**: Hardware-accelerated, secure hashing
+- **HTTPS required**: Encrypted connection for initial load
+
+### How to Verify Privacy Yourself
+
+**For Non-Technical Users:**
+1. **Static Hosting**: This app runs on GitHub Pages (static files only)
+2. **Open Source**: All code is visible at [github.com/ricardodeazambuja/deduplicator](https://github.com/ricardodeazambuja/deduplicator)
+3. **No Login Required**: No accounts, no registration, no tracking
+4. **Works Offline**: Once loaded, you can disconnect from internet and it still works
+
+**For Technical Users:**
+1. **Network Monitoring**: Open DevTools → Network tab during file processing
+2. **Source Code Review**: Inspect the complete codebase on GitHub
+3. **CSP Headers**: Check Content-Security-Policy in browser inspector
+4. **Static Hosting**: Verify GitHub Pages deployment (no server backend)
+
+### Technical Implementation
+
+```
+Your Files → Browser Memory → Web Workers → Results Display
+     ↓              ↓             ↓            ↓
+  (Local)      (Local)       (Local)      (Local)
+```
+
+**No step involves external servers or network transmission.**
 
 ### Security Measures
-- **Content Security Policy**: Strict CSP headers in production
-- **Subresource Integrity**: Verified asset loading
-- **Secure Context**: HTTPS required for File System Access API
-- **Memory Safety**: Bounds checking and monitoring
-- **Input Validation**: Robust error handling for edge cases
+- **Content Security Policy**: Prevents unauthorized external requests
+- **Permission-based access**: File System Access API requires explicit user consent
+- **Memory isolation**: Web Workers provide secure processing environment
+- **Input validation**: Robust error handling for all file operations
 
 ### Reporting Security Issues
-Please report security vulnerabilities via GitHub's private vulnerability disclosure.
+Found a security concern? Please report via GitHub's private vulnerability disclosure.
 
 ## 📊 Performance Metrics
 
