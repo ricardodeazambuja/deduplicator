@@ -407,12 +407,12 @@ function App() {
               }}
             >
               <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                🔒 Your Privacy is Guaranteed
+                🔒 Privacy Explained - Click to Learn How
               </Typography>
             </AccordionSummary>
             <AccordionDetails sx={{ p: 3 }}>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                <strong>Your files NEVER leave your device.</strong> Here's how we ensure complete privacy:
+                <strong>This app is designed so your files stay on your device.</strong> Here's how it works:
               </Typography>
               
               <Box component="ul" sx={{ pl: 2, mb: 2, '& li': { mb: 1 } }}>
@@ -433,7 +433,7 @@ function App() {
               <Alert severity="info" sx={{ mb: 2 }}>
                 <Typography variant="body2">
                   <strong>Verify it yourself:</strong> Open Developer Tools (F12 on Windows/Linux, Cmd+Option+I on Mac) → Network tab while using this app. 
-                  You'll see zero network requests during file processing!
+                  You should see no network requests during file processing!
                 </Typography>
               </Alert>
               
@@ -444,8 +444,8 @@ function App() {
                 <li>File System Access API for secure, permission-based folder access</li>
                 <li>Web Workers for background processing without blocking your browser</li>
                 <li>SHA-256 cryptographic hashing using browser's SubtleCrypto API</li>
-                <li>IndexedDB for optional local session storage (never transmitted)</li>
-                <li>Content Security Policy prevents unauthorized network requests</li>
+                <li>IndexedDB for optional local session storage (designed not to transmit)</li>
+                <li>Static hosting with no server backend - no server can access your data</li>
               </Box>
               
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>

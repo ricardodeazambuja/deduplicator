@@ -20,7 +20,7 @@ Dedupe-Local is a privacy-first file deduplication tool that runs entirely in yo
 - **Multi-Criteria**: Combination of all detection methods with configurable priorities
 
 ### 🛡️ **Privacy & Security**
-- **100% Client-Side**: Zero data transmission, complete privacy
+- **Client-Side Design**: Aims for local processing with privacy focus
 - **Secure File Access**: Modern File System Access API with proper permissions
 - **Memory Safe**: Built-in performance monitoring and optimization
 
@@ -218,7 +218,7 @@ npm run dev
 ### Development Guidelines
 - **Code Style**: ESLint + Prettier (auto-formatted)
 - **Commits**: Conventional Commits format (`feat:`, `fix:`, `docs:`, etc.)
-- **Testing**: Add tests for new features, ensure 95%+ coverage
+- **Testing**: Add tests for new features, aim for high coverage
 - **Documentation**: Update README and JSDoc comments
 - **Performance**: Consider memory usage and large dataset scenarios
 
@@ -250,11 +250,11 @@ npm run build -- --analyze
 
 ### Your Files Never Leave Your Device
 
-**We guarantee complete privacy.** Here's exactly how:
+**Our design aims for complete privacy.** Here's how it works:
 
 #### ✅ **Client-Side Processing Only**
-- All file analysis happens entirely in your browser's memory
-- No uploads, downloads, or data transmission of any kind
+- All file analysis is designed to happen in your browser's memory
+- The architecture avoids uploads, downloads, or data transmission
 - Files are processed using Web Workers in your browser
 
 #### ✅ **No Server Backend**
@@ -262,9 +262,9 @@ npm run build -- --analyze
 - No server exists that could access your data
 - Static hosting means no database, no logging, no data collection
 
-#### ✅ **Zero Network Requests During Processing**
+#### ✅ **Minimal Network Requests During Processing**
 - **Verify yourself**: Open Developer Tools (`F12` on Windows/Linux, `Cmd+Option+I` on Mac) → `Network` tab while using the app
-- You'll see ZERO network requests during file processing
+- You should see no network requests during file processing (beyond initial page load)
 - Only the initial page load requires network access
 
 #### ✅ **Open Source Transparency**
@@ -274,8 +274,8 @@ npm run build -- --analyze
 
 #### ✅ **Modern Browser Security**
 - **File System Access API**: Secure, permission-based folder access
-- **Content Security Policy**: Prevents unauthorized network requests
 - **SubtleCrypto API**: Hardware-accelerated, secure hashing
+- **Web Worker isolation**: Secure processing environment
 - **HTTPS required**: Encrypted connection for initial load
 
 ### How to Verify Privacy Yourself
@@ -289,8 +289,8 @@ npm run build -- --analyze
 **For Technical Users:**
 1. **Network Monitoring**: Open DevTools (`F12` on Windows/Linux, `Cmd+Option+I` on Mac) → Network tab during file processing
 2. **Source Code Review**: Inspect the complete codebase on GitHub
-3. **CSP Headers**: Check Content-Security-Policy in browser inspector
-4. **Static Hosting**: Verify GitHub Pages deployment (no server backend)
+3. **Static Hosting**: Verify GitHub Pages deployment (no server backend)
+4. **Worker Isolation**: Inspect Web Workers in DevTools → Sources tab
 
 ### Technical Implementation
 
@@ -303,9 +303,9 @@ Your Files → Browser Memory → Web Workers → Results Display
 **No step involves external servers or network transmission.**
 
 ### Security Measures
-- **Content Security Policy**: Prevents unauthorized external requests
 - **Permission-based access**: File System Access API requires explicit user consent
 - **Memory isolation**: Web Workers provide secure processing environment
+- **Static hosting**: No server backend that could access or log your data
 - **Input validation**: Robust error handling for all file operations
 
 ### Reporting Security Issues
