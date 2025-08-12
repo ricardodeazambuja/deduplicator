@@ -21,8 +21,8 @@ test.describe('Multi-Criteria Detection', () => {
     // Check if multi-criteria settings accordion is visible
     await expect(page.locator('text=Multi-Criteria Settings')).toBeVisible()
     
-    // The accordion should be present
-    await expect(page.locator('.MuiAccordion-root')).toBeVisible()
+    // The multi-criteria settings accordion should be present
+    await expect(page.locator('text=Multi-Criteria Settings').locator('..')).toBeVisible()
   })
 
   test('should show detection methods when multi-criteria settings expanded', async ({ page }) => {
@@ -34,8 +34,8 @@ test.describe('Multi-Criteria Detection', () => {
     // The accordion should be visible
     await expect(page.locator('text=Multi-Criteria Settings')).toBeVisible()
     
-    // Expand the accordion
-    await page.locator('.MuiAccordionSummary-root').click()
+    // Expand the multi-criteria settings accordion specifically
+    await page.locator('text=Multi-Criteria Settings').click()
     
     // Wait for the accordion to expand
     await page.waitForTimeout(500)
@@ -55,8 +55,8 @@ test.describe('Multi-Criteria Detection', () => {
     // Switch to multi-criteria mode
     await page.locator('input[value="multi-criteria"]').click()
     
-    // Expand the settings
-    await page.locator('.MuiAccordionSummary-root').click()
+    // Expand the multi-criteria settings accordion specifically  
+    await page.locator('text=Multi-Criteria Settings').click()
     
     // Wait for the accordion to expand
     await page.waitForTimeout(500)
