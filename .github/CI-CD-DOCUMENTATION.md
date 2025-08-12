@@ -8,8 +8,18 @@ This directory contains automated workflows for the Dedupe-Local project.
 **Purpose**: Automated testing, building, and deployment
 
 **Triggers:**
-- **Push to main/master**: Runs tests + deploys to GitHub Pages
-- **Pull Requests**: Runs tests only (no deployment)
+- **Push to main/master** (with specific file changes): Runs tests + deploys to GitHub Pages
+- **Pull Requests** (with specific file changes): Runs tests only (no deployment)
+
+**Path Filters** (only triggers when these files change):
+- `src/**` - Source code
+- `public/**` - Static assets  
+- `index.html` - Main HTML file
+- `package*.json` - Dependencies
+- `vite.config.js` - Build configuration
+- `playwright.config.js` - Test configuration
+- `tests/**` - Test files
+- `.github/workflows/**` - Workflow changes
 
 **Jobs:**
 1. **Test**: Install dependencies, build, run Playwright tests
@@ -72,7 +82,7 @@ build-and-deploy:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
     - run: npm ci
-    - run: npm run build
+    - run: npm run build:github
     - uses: actions/configure-pages@v5
     - uses: actions/upload-pages-artifact@v3
       with:
@@ -83,12 +93,15 @@ build-and-deploy:
 
 ## 🎯 When Workflows Run
 
-| Event | Branch | Test Job | Deploy Job | Result |
-|-------|--------|----------|------------|--------|
-| Push | `main` | ✅ Runs | ✅ Runs | Full CI/CD |
-| Push | `feature/*` | ❌ No trigger | ❌ No trigger | No action |
-| PR to `main` | Any | ✅ Runs | ❌ Skipped | Test only |
-| PR merge | `main` | ✅ Runs | ✅ Runs | Full CI/CD |
+| Event | Branch | Files Changed | Test Job | Deploy Job | Result |
+|-------|--------|---------------|----------|------------|--------|
+| Push | `main` | App files | ✅ Runs | ✅ Runs | Full CI/CD |
+| Push | `main` | Docs only | ❌ No trigger | ❌ No trigger | No action |
+| Push | `feature/*` | Any | ❌ No trigger | ❌ No trigger | No action |
+| PR to `main` | Any | App files | ✅ Runs | ❌ Skipped | Test only |
+| PR to `main` | Any | Docs only | ❌ No trigger | ❌ No trigger | No action |
+
+**Note**: "App files" refers to the path filters listed above. Documentation-only changes (README.md, etc.) will not trigger builds.
 
 ## 🔧 Customization
 

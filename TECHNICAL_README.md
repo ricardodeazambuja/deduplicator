@@ -377,8 +377,22 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package*.json'
+      - 'vite.config.js'
+      - 'tests/**'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package*.json'
+      - 'vite.config.js'
+      - 'tests/**'
 
 jobs:
   test:
@@ -387,7 +401,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
       - run: npm ci
-      - run: npm run build
+      - run: npm run build:github
       - run: npx playwright install --with-deps
       - run: npm test
 
@@ -396,7 +410,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - run: npm run build
+      - run: npm run build:github
       - uses: actions/deploy-pages@v4
 ```
 
