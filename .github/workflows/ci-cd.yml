@@ -3,8 +3,26 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main, master ]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package*.json'
+      - 'vite.config.js'
+      - 'playwright.config.js'
+      - 'tests/**'
+      - '.github/workflows/**'
   pull_request:
     branches: [ main, master ]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package*.json'
+      - 'vite.config.js'
+      - 'playwright.config.js'
+      - 'tests/**'
+      - '.github/workflows/**'
 
 jobs:
   test:
