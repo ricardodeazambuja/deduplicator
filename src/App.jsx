@@ -193,7 +193,7 @@ function App() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Box
               component="img"
-              src="/icon-256.png"
+              src="./icon-256.png"
               alt="Dedupe-Local"
               sx={{
                 width: 64,
