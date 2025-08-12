@@ -263,7 +263,7 @@ npm run build -- --analyze
 - Static hosting means no database, no logging, no data collection
 
 #### ✅ **Zero Network Requests During Processing**
-- **Verify yourself**: Press `F12` → `Network` tab while using the app
+- **Verify yourself**: Open Developer Tools (`F12` on Windows/Linux, `Cmd+Option+I` on Mac) → `Network` tab while using the app
 - You'll see ZERO network requests during file processing
 - Only the initial page load requires network access
 
@@ -287,7 +287,7 @@ npm run build -- --analyze
 4. **Works Offline**: Once loaded, you can disconnect from internet and it still works
 
 **For Technical Users:**
-1. **Network Monitoring**: Open DevTools → Network tab during file processing
+1. **Network Monitoring**: Open DevTools (`F12` on Windows/Linux, `Cmd+Option+I` on Mac) → Network tab during file processing
 2. **Source Code Review**: Inspect the complete codebase on GitHub
 3. **CSP Headers**: Check Content-Security-Policy in browser inspector
 4. **Static Hosting**: Verify GitHub Pages deployment (no server backend)

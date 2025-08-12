@@ -5,8 +5,8 @@ import Container from '@mui/material/Container'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import { Paper, Alert } from '@mui/material'
-import { PlayArrow, CheckCircle, GitHub } from '@mui/icons-material'
+import { Paper, Alert, Accordion, AccordionSummary, AccordionDetails } from '@mui/material'
+import { PlayArrow, CheckCircle, GitHub, ExpandMore } from '@mui/icons-material'
 
 import FolderSelector from './components/FolderSelector'
 import ScanModeSelector from './components/ScanModeSelector'
@@ -190,12 +190,27 @@ function App() {
 
       <Container maxWidth="lg">
         <Box sx={{ my: 4 }}>
-          <Typography variant="h3" component="h1" gutterBottom>
-            Dedupe-Local
-          </Typography>
-          <Typography variant="h6" component="h2" gutterBottom color="text.secondary">
-            Client-Side File Deduplicator
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Box
+              component="img"
+              src="/icon-256.png"
+              alt="Dedupe-Local"
+              sx={{
+                width: 64,
+                height: 64,
+                borderRadius: 2,
+                boxShadow: 2
+              }}
+            />
+            <Box>
+              <Typography variant="h3" component="h1" sx={{ mb: 0 }}>
+                Dedupe-Local
+              </Typography>
+              <Typography variant="h6" component="h2" color="text.secondary">
+                Client-Side File Deduplicator
+              </Typography>
+            </Box>
+          </Box>
           <Typography variant="body1" gutterBottom sx={{ mb: 4 }}>
             Find and manage duplicate files with complete privacy - all processing happens in your browser.
           </Typography>
@@ -377,76 +392,84 @@ function App() {
           />
 
           {/* Privacy & Security Information */}
-          <Paper sx={{ 
-            mt: 6, 
-            p: 3, 
-            bgcolor: 'primary.light',
-            color: 'primary.contrastText'
-          }}>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              🔒 Your Privacy is Guaranteed
-            </Typography>
-            
-            <Typography variant="body2" sx={{ mb: 2 }}>
-              <strong>Your files NEVER leave your device.</strong> Here's how we ensure complete privacy:
-            </Typography>
-            
-            <Box component="ul" sx={{ pl: 2, mb: 2, '& li': { mb: 1 } }}>
-              <li>
-                <strong>Client-Side Processing:</strong> All file analysis happens entirely in your browser's memory
-              </li>
-              <li>
-                <strong>No Server Backend:</strong> This app is hosted as static files on GitHub Pages - no server can access your data
-              </li>
-              <li>
-                <strong>Zero Network Requests:</strong> No data is transmitted anywhere during file processing
-              </li>
-              <li>
-                <strong>Open Source:</strong> Complete source code is available for inspection
-              </li>
-            </Box>
-            
-            <Alert severity="info" sx={{ mb: 2 }}>
-              <Typography variant="body2">
-                <strong>Verify it yourself:</strong> Press F12 → Network tab while using this app. 
-                You'll see zero network requests during file processing!
+          <Accordion sx={{ mt: 6 }}>
+            <AccordionSummary 
+              expandIcon={<ExpandMore />}
+              sx={{ 
+                bgcolor: 'primary.light',
+                color: 'primary.contrastText',
+                '&:hover': {
+                  bgcolor: 'primary.main',
+                },
+                '& .MuiAccordionSummary-content': {
+                  alignItems: 'center'
+                }
+              }}
+            >
+              <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                🔒 Your Privacy is Guaranteed
               </Typography>
-            </Alert>
-            
-            <Typography variant="body2" sx={{ mb: 2 }}>
-              <strong>Technical Details:</strong>
-            </Typography>
-            <Box component="ul" sx={{ pl: 2, mb: 2, fontSize: '0.875rem', '& li': { mb: 0.5 } }}>
-              <li>File System Access API for secure, permission-based folder access</li>
-              <li>Web Workers for background processing without blocking your browser</li>
-              <li>SHA-256 cryptographic hashing using browser's SubtleCrypto API</li>
-              <li>IndexedDB for optional local session storage (never transmitted)</li>
-              <li>Content Security Policy prevents unauthorized network requests</li>
-            </Box>
-            
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
-              <Button
-                variant="outlined"
-                size="small"
-                href="https://github.com/ricardodeazambuja/deduplicator"
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{ color: 'inherit', borderColor: 'currentColor' }}
-              >
-                View Source Code
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                href="https://pages.github.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{ color: 'inherit', borderColor: 'currentColor' }}
-              >
-                About GitHub Pages
-              </Button>
-            </Box>
-          </Paper>
+            </AccordionSummary>
+            <AccordionDetails sx={{ p: 3 }}>
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                <strong>Your files NEVER leave your device.</strong> Here's how we ensure complete privacy:
+              </Typography>
+              
+              <Box component="ul" sx={{ pl: 2, mb: 2, '& li': { mb: 1 } }}>
+                <li>
+                  <strong>Client-Side Processing:</strong> All file analysis happens entirely in your browser's memory
+                </li>
+                <li>
+                  <strong>No Server Backend:</strong> This app is hosted as static files on GitHub Pages - no server can access your data
+                </li>
+                <li>
+                  <strong>Zero Network Requests:</strong> No data is transmitted anywhere during file processing
+                </li>
+                <li>
+                  <strong>Open Source:</strong> Complete source code is available for inspection
+                </li>
+              </Box>
+              
+              <Alert severity="info" sx={{ mb: 2 }}>
+                <Typography variant="body2">
+                  <strong>Verify it yourself:</strong> Open Developer Tools (F12 on Windows/Linux, Cmd+Option+I on Mac) → Network tab while using this app. 
+                  You'll see zero network requests during file processing!
+                </Typography>
+              </Alert>
+              
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                <strong>Technical Details:</strong>
+              </Typography>
+              <Box component="ul" sx={{ pl: 2, mb: 2, fontSize: '0.875rem', '& li': { mb: 0.5 } }}>
+                <li>File System Access API for secure, permission-based folder access</li>
+                <li>Web Workers for background processing without blocking your browser</li>
+                <li>SHA-256 cryptographic hashing using browser's SubtleCrypto API</li>
+                <li>IndexedDB for optional local session storage (never transmitted)</li>
+                <li>Content Security Policy prevents unauthorized network requests</li>
+              </Box>
+              
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  href="https://github.com/ricardodeazambuja/deduplicator"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View Source Code
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  href="https://pages.github.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  About GitHub Pages
+                </Button>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
 
           {/* License Notice */}
           <Box sx={{ 
