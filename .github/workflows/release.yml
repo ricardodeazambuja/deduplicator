@@ -54,7 +54,7 @@ jobs:
         tar -czf dedupe-local-${{ github.event.inputs.version || github.ref_name }}.tar.gz -C dist .
       
     - name: 📤 Upload Release Assets
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: release-builds
         path: |
